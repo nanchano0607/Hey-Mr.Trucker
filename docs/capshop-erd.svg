@@ -1,0 +1,112 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2800" height="1260" viewBox="0 0 2800 1260">
+  <defs>
+    <style>
+      .bg{fill:#f7f8fa}.title{font:700 34px Arial,sans-serif;fill:#172033}.sub{font:15px Arial,sans-serif;fill:#687386}.box{fill:#fff;stroke:#8c98a8;stroke-width:1.5}.head{fill:#26364d}.ht{font:700 18px Arial,sans-serif;fill:#fff;letter-spacing:.5px}.f{font:14px 'SFMono-Regular',Consolas,monospace;fill:#263238}.pk{fill:#b56b13;font-weight:700}.fk{fill:#1867a5;font-weight:700}.muted{fill:#7a8493}.rel{fill:none;stroke:#788596;stroke-width:2}.dash{stroke-dasharray:8 6}.label{font:12px Arial,sans-serif;fill:#586474}.legend{font:13px Arial,sans-serif;fill:#465366}
+      svg&gt;g:nth-of-type(2)&gt;path{display:none}
+      svg&gt;g:nth-of-type(2)&gt;path.compact{display:block;stroke:#4f8796;stroke-width:2.2}
+      svg&gt;g:nth-of-type(n+3){transform-box:view-box;transform-origin:0 0}
+      svg&gt;g:nth-of-type(3){transform:translate(40px,130px) scale(.72)}
+      svg&gt;g:nth-of-type(4){transform:translate(40px,390px) scale(.72)}
+      svg&gt;g:nth-of-type(5){transform:translate(40px,510px) scale(.72)}
+      svg&gt;g:nth-of-type(6){transform:translate(390px,130px) scale(.72)}
+      svg&gt;g:nth-of-type(7){transform:translate(390px,330px) scale(.72)}
+      svg&gt;g:nth-of-type(8){transform:translate(390px,460px) scale(.72)}
+      svg&gt;g:nth-of-type(9){transform:translate(390px,640px) scale(.72)}
+      svg&gt;g:nth-of-type(10){transform:translate(740px,850px) scale(.72)}
+      svg&gt;g:nth-of-type(11){transform:translate(740px,1040px) scale(.72)}
+      svg&gt;g:nth-of-type(12){transform:translate(740px,130px) scale(.72)}
+      svg&gt;g:nth-of-type(13){transform:translate(1090px,130px) scale(.72)}
+      svg&gt;g:nth-of-type(14){transform:translate(1090px,250px) scale(.72)}
+      svg&gt;g:nth-of-type(15){transform:translate(1090px,360px) scale(.72)}
+      svg&gt;g:nth-of-type(16){transform:translate(1090px,480px) scale(.72)}
+      svg&gt;g:nth-of-type(17){transform:translate(1090px,590px) scale(.72)}
+      svg&gt;g:nth-of-type(18){transform:translate(1090px,730px) scale(.72)}
+      svg&gt;g:nth-of-type(19){transform:translate(1440px,130px) scale(.72)}
+      svg&gt;g:nth-of-type(20){transform:translate(1790px,130px) scale(.72)}
+      svg&gt;g:nth-of-type(21){transform:translate(1790px,300px) scale(.72)}
+      svg&gt;g:nth-of-type(22){transform:translate(1790px,500px) scale(.72)}
+      svg&gt;g:nth-of-type(23){transform:translate(2140px,130px) scale(.72)}
+      svg&gt;g:nth-of-type(24){transform:translate(2140px,270px) scale(.72)}
+      svg&gt;g:nth-of-type(25){transform:translate(2140px,410px) scale(.72)}
+      svg&gt;g:nth-of-type(26){transform:translate(2490px,130px) scale(.72)}
+      svg&gt;g:nth-of-type(27){transform:translate(2490px,240px) scale(.72)}
+    </style>
+    <marker id="one" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M5 0V10" stroke="#788596" stroke-width="1.8"/></marker>
+    <marker id="many" markerWidth="12" markerHeight="12" refX="11" refY="6" orient="auto"><path d="M1 1L11 6L1 11M11 6H0" fill="none" stroke="#788596" stroke-width="1.6"/></marker>
+  </defs>
+  <rect class="bg" width="2800" height="1900"/>
+  <text class="title" x="70" y="65">CAPSHOP — Entity Relationship Diagram</text>
+  <text class="sub" x="70" y="96">JPA domain model · Logical schema · 2026-07-18</text>
+  <g transform="translate(2100 48)"><rect class="box" width="630" height="60"/><text class="legend" x="18" y="25"><tspan class="pk">PK</tspan><tspan> Primary Key　</tspan><tspan class="fk">FK</tspan><tspan> Foreign Key　──── Identifying relation　</tspan><tspan>┄┄ Logical reference</tspan></text><text class="legend" x="18" y="47">Crow's foot = many　| = one　Nullable columns are intentionally not inferred</text></g>
+
+  <!-- relations (drawn behind entities) -->
+  <g>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M520 330H575V175H630"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M520 350H590V490H630"/>
+    <path class="rel dash" marker-start="url(#one)" marker-end="url(#one)" d="M300 460V500"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M520 370H600V770H630"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M520 390H610V1005H630"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M520 410H620V1280H630"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M520 430H570V1585H630"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M1070 260H1115V175H1160"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M1070 285H1125V500H1160"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M1070 310H1135V740H1160"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M1070 335H1145V980H1160"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M1070 360H1155V1240H1160"/>
+    <path class="rel" marker-start="url(#many)" marker-end="url(#one)" d="M1070 950H1120V590H1410V400H1450"/>
+    <path class="rel" marker-start="url(#many)" marker-end="url(#one)" d="M1070 1300H1130V600H1400V500H1450"/>
+    <path class="rel" marker-start="url(#many)" marker-end="url(#one)" d="M1070 1280H1140V1150H1940V800H1980"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M1890 315H1935V175H1980"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#one)" d="M1890 335H1950V445H1980"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M1890 355H1930V1710H1110V1110H1070"/>
+    <path class="rel" marker-start="url(#one)" marker-end="url(#many)" d="M1620 1350H1660V1710H1140V1500H1160"/>
+    <!-- Compact landscape relations -->
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M364 205H378V205H390"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M364 230H375V360H390"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M364 250H370V500H390"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M364 270H365V700H390"/>
+    <path class="rel compact dash" marker-start="url(#one)" marker-end="url(#one)" d="M200 368V390"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M1071 200H1080V180H1090"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M1071 220H1080V285H1090"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M1071 240H1078V400H1090"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M707 705H750V530H1090"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#many)" d="M1757 210H1772V180H1790"/>
+    <path class="rel compact" marker-start="url(#one)" marker-end="url(#one)" d="M1757 235H1775V350H1790"/>
+  </g>
+
+  <!-- identity -->
+  <g transform="translate(70 130)"><rect class="box" width="450" height="330"/><rect class="head" width="450" height="42"/><text class="ht" x="16" y="27">USER</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    email : VARCHAR</tspan><tspan x="16" dy="25">    name : VARCHAR</tspan><tspan x="16" dy="25">    password : VARCHAR</tspan><tspan x="16" dy="25">    phone : VARCHAR [UQ]</tspan><tspan x="16" dy="25">    zipcode : VARCHAR</tspan><tspan x="16" dy="25">    points : BIGINT</tspan><tspan x="16" dy="25">    oauth_provider : ENUM</tspan><tspan x="16" dy="25">    provider_user_id : VARCHAR</tspan><tspan x="16" dy="25">    gender / birth</tspan><tspan x="16" dy="25">    is_admin / is_deleted</tspan><tspan x="16" dy="25">    created_at / updated_at</tspan></text></g>
+  <g transform="translate(70 500)"><rect class="box" width="450" height="125"/><rect class="head" width="450" height="42"/><text class="ht" x="16" y="27">REFRESH_TOKEN</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  user_id : BIGINT [UQ]</tspan><tspan x="16" dy="25">    refresh_token : VARCHAR</tspan></text></g>
+  <g transform="translate(70 665)"><rect class="box" width="450" height="225"/><rect class="head" width="450" height="42"/><text class="ht" x="16" y="27">PHONE_VERIFICATION</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    phone_number : VARCHAR</tspan><tspan x="16" dy="25">    code : VARCHAR(10)</tspan><tspan x="16" dy="25">    verified : BOOLEAN</tspan><tspan x="16" dy="25">    attempt_count : INT</tspan><tspan x="16" dy="25">    created_at / expires_at</tspan><tspan x="16" dy="25">    last_sent_at : DATETIME</tspan></text></g>
+
+  <!-- user dependents -->
+  <g transform="translate(630 130)"><rect class="box" width="440" height="250"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">USER_CONSENT</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  user_id : BIGINT</tspan><tspan x="16" dy="25">    consent_type : VARCHAR</tspan><tspan x="16" dy="25">    version : VARCHAR</tspan><tspan x="16" dy="25">    agreed : BOOLEAN</tspan><tspan x="16" dy="25">    timestamp : INSTANT</tspan><tspan x="16" dy="25">    ip / user_agent : VARCHAR</tspan></text></g>
+  <g transform="translate(630 420)"><rect class="box" width="440" height="145"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">USER_ADDRESS</text><text class="f" x="16" y="70"><tspan class="fk">FK  user_id : BIGINT</tspan><tspan x="16" dy="25">    address : VARCHAR</tspan><tspan class="muted" x="16" dy="25">    ElementCollection</tspan></text></g>
+  <g transform="translate(630 605)"><rect class="box" width="440" height="225"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">CART_ITEM</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  user_id : BIGINT</tspan><tspan class="fk" x="16" dy="25">FK  product_id : BIGINT</tspan><tspan x="16" dy="25">    quantity : INT</tspan><tspan x="16" dy="25">    size : VARCHAR</tspan></text></g>
+  <g transform="translate(630 870)"><rect class="box" width="440" height="270"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">REVIEW</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  user_id : BIGINT</tspan><tspan class="fk" x="16" dy="25">FK  product_id : BIGINT</tspan><tspan class="fk" x="16" dy="25">FK  order_id : BIGINT</tspan><tspan x="16" dy="25">    rating : INT</tspan><tspan x="16" dy="25">    content : TEXT</tspan><tspan x="16" dy="25">    created_at / updated_at</tspan></text></g>
+  <g transform="translate(630 1180)"><rect class="box" width="440" height="200"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">USER_COUPON</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  user_id / coupon_id</tspan><tspan class="fk" x="16" dy="25">FK  order_id : BIGINT</tspan><tspan x="16" dy="25">    status : ENUM</tspan><tspan x="16" dy="25">    obtained / used / valid_from / valid_until</tspan><tspan x="16" dy="25">    discount_amount : BIGINT</tspan></text></g>
+  <g transform="translate(630 1420)"><rect class="box" width="440" height="155"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">CHECKOUT</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk">　REF user_id / order_id</tspan><tspan x="16" dy="25">    name / address / phone</tspan><tspan x="16" dy="25">    items_json : TEXT</tspan><tspan x="16" dy="25">    created_at : DATETIME</tspan></text></g>
+
+  <!-- products -->
+  <g transform="translate(1160 130)"><rect class="box" width="460" height="330"/><rect class="head" width="460" height="42"/><text class="ht" x="16" y="27">PRODUCT</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    name : VARCHAR</tspan><tspan x="16" dy="25">    price / past_price : BIGINT</tspan><tspan x="16" dy="25">    stock : BIGINT (legacy)</tspan><tspan x="16" dy="25">    color : VARCHAR</tspan><tspan x="16" dy="25">    size_info : TEXT</tspan><tspan x="16" dy="25">    main_image_url : VARCHAR</tspan><tspan x="16" dy="25">    is_new : BOOLEAN</tspan><tspan x="16" dy="25">    product_type : ENUM</tspan><tspan x="16" dy="25">    vintage_category : ENUM</tspan><tspan x="16" dy="25">    status : ENUM</tspan></text></g>
+  <g transform="translate(1160 500)"><rect class="box" width="460" height="145"/><rect class="head" width="460" height="42"/><text class="ht" x="16" y="27">PRODUCT_STOCK</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  product_id : BIGINT</tspan><tspan x="16" dy="25">    size : VARCHAR　 stock : BIGINT</tspan></text></g>
+  <g transform="translate(1160 685)"><rect class="box" width="460" height="130"/><rect class="head" width="460" height="42"/><text class="ht" x="16" y="27">PRODUCT_SIZE</text><text class="f" x="16" y="70"><tspan class="fk">FK  product_id : BIGINT</tspan><tspan x="16" dy="25">    size : VARCHAR</tspan><tspan class="muted" x="16" dy="25">    ElementCollection</tspan></text></g>
+  <g transform="translate(1160 855)"><rect class="box" width="460" height="145"/><rect class="head" width="460" height="42"/><text class="ht" x="16" y="27">PRODUCT_IMAGE_URLS</text><text class="f" x="16" y="70"><tspan class="fk">FK  product_id : BIGINT</tspan><tspan x="16" dy="25">    image_urls : VARCHAR</tspan><tspan class="muted" x="16" dy="25">    ElementCollection</tspan></text></g>
+  <g transform="translate(1160 1040)"><rect class="box" width="460" height="130"/><rect class="head" width="460" height="42"/><text class="ht" x="16" y="27">REVIEW_IMAGES</text><text class="f" x="16" y="70"><tspan class="fk">FK  review_id : BIGINT</tspan><tspan x="16" dy="25">    image_url : VARCHAR</tspan></text></g>
+  <g transform="translate(1160 1420)"><rect class="box" width="460" height="155"/><rect class="head" width="460" height="42"/><text class="ht" x="16" y="27">CAP_STOCK</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  cap_id : BIGINT</tspan><tspan x="16" dy="25">    size : VARCHAR</tspan><tspan x="16" dy="25">    stock : BIGINT</tspan></text></g>
+
+  <!-- commerce -->
+  <g transform="translate(1450 1180)"><rect class="box" width="440" height="340"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">CAP <tspan font-weight="400" font-size="13">[LEGACY]</tspan></text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    name / description : VARCHAR</tspan><tspan x="16" dy="25">    price / stock : BIGINT</tspan><tspan x="16" dy="25">    color : VARCHAR</tspan><tspan x="16" dy="25">    size_info : TEXT</tspan><tspan x="16" dy="25">    main_image_url : VARCHAR</tspan><tspan x="16" dy="25">    is_new : BOOLEAN</tspan><tspan x="16" dy="25">    size[] / image_urls[]</tspan><tspan class="muted" x="16" dy="35">Legacy product model retained in source</tspan></text></g>
+  <g transform="translate(1450 130)"><rect class="box" width="440" height="430"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">ORDERS</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  user_id : BIGINT</tspan><tspan class="fk" x="16" dy="25">FK  used_user_coupon_id : BIGINT</tspan><tspan x="16" dy="25">    order_id : VARCHAR</tspan><tspan x="16" dy="25">    status : ENUM</tspan><tspan x="16" dy="25">    receiver_name / address / phone</tspan><tspan x="16" dy="25">    tracking_number / return_tracking_number</tspan><tspan x="16" dy="25">    return_reason / return_method</tspan><tspan x="16" dy="25">    total_price / original_price</tspan><tspan x="16" dy="25">    coupon / points / total_discount</tspan><tspan x="16" dy="25">    final_price / return_shipping_fee</tspan><tspan x="16" dy="25">    order_date / delivered_at</tspan><tspan x="16" dy="25">    confirmed / confirmed_at</tspan><tspan x="16" dy="25">    is_virtual_account : BOOLEAN</tspan></text></g>
+  <g transform="translate(1980 130)"><rect class="box" width="440" height="210"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">ORDER_ITEM</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  order_id : BIGINT</tspan><tspan class="fk" x="16" dy="25">FK  product_id : BIGINT</tspan><tspan x="16" dy="25">    quantity : INT</tspan><tspan x="16" dy="25">    order_price : BIGINT</tspan><tspan x="16" dy="25">    selected_size : VARCHAR</tspan></text></g>
+  <g transform="translate(1980 385)"><rect class="box" width="440" height="250"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">PAYMENT</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan class="fk" x="16" dy="25">FK  order_id : BIGINT</tspan><tspan x="16" dy="25">    payment_key / method</tspan><tspan x="16" dy="25">    amount : BIGINT</tspan><tspan x="16" dy="25">    status : ENUM</tspan><tspan x="16" dy="25">    requested / approved / canceled_at</tspan><tspan x="16" dy="25">    fail_reason : VARCHAR</tspan></text></g>
+  <g transform="translate(1980 680)"><rect class="box" width="440" height="290"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">COUPON</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    name / code : VARCHAR</tspan><tspan x="16" dy="25">    type : ENUM</tspan><tspan x="16" dy="25">    discount_value : INT</tspan><tspan x="16" dy="25">    min_order_amount : BIGINT</tspan><tspan x="16" dy="25">    max_discount_amount : BIGINT</tspan><tspan x="16" dy="25">    is_active / is_reusable</tspan><tspan x="16" dy="25">    description : TEXT</tspan><tspan x="16" dy="25">    created_at / updated_at</tspan></text></g>
+
+  <!-- content / operations -->
+  <g transform="translate(1980 1030)"><rect class="box" width="440" height="180"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">NOTICE</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    title / author : VARCHAR</tspan><tspan x="16" dy="25">    content : TEXT</tspan><tspan x="16" dy="25">    created_at / updated_at</tspan></text></g>
+  <g transform="translate(1980 1250)"><rect class="box" width="440" height="180"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">STORY</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    background_image : VARCHAR</tspan><tspan x="16" dy="25">    content_image : VARCHAR</tspan><tspan x="16" dy="25">    created_at / updated_at</tspan></text></g>
+  <g transform="translate(1980 1470)"><rect class="box" width="440" height="180"/><rect class="head" width="440" height="42"/><text class="ht" x="16" y="27">POPUP</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    image_url : VARCHAR</tspan><tspan x="16" dy="25">    is_active : BOOLEAN</tspan><tspan x="16" dy="25">    created_at / updated_at</tspan></text></g>
+  <g transform="translate(2520 130)"><rect class="box" width="220" height="130"/><rect class="head" width="220" height="42"/><text class="ht" x="16" y="27">LOGBOOK</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    image_url</tspan><tspan x="16" dy="25">    sort_order</tspan></text></g>
+  <g transform="translate(2520 300)"><rect class="box" width="220" height="105"/><rect class="head" width="220" height="42"/><text class="ht" x="16" y="27">STOCKIST</text><text class="f" x="16" y="70"><tspan class="pk">PK  id</tspan><tspan x="16" dy="25">    image_url</tspan></text></g>
+  <text class="sub" x="40" y="1230">Source: backend/src/main/java/com/example/capshop/domain · Relationships are documented through highlighted FK fields; dashed references are non-association scalar keys.</text>
+</svg>

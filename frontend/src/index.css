@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+/* Local font declarations */
+@font-face {
+  font-family: 'Beaver Punch';
+  src: url('./assets/fonts/Beaver_Punch.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Global tokens (optional, 최소화) */
+:root {
+  color-scheme: light;
+}
+
+/* 페이지 기본 바탕/텍스트 */
+@layer base {
+  body {
+    @apply bg-black;
+    margin: 0;
+    font-family: 'Beaver Punch', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  }
+}
+
+/* Hide scrollbar helper */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}
+
+/* 선택: 컨테이너 유틸 */
+.container {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Submenu outline utility: black stroke (useful for light/dynamic backgrounds) */
+.text-outline-black {
+  -webkit-text-stroke: 0.6px rgba(0,0,0,0.95);
+  /* fallback for browsers without text-stroke: subtle multiple text-shadows to simulate thin outline */
+  text-shadow:
+    0.4px 0.4px 0 rgba(0,0,0,0.95),
+    -0.4px -0.4px 0 rgba(0,0,0,0.95),
+    0.4px -0.4px 0 rgba(0,0,0,0.95),
+    -0.4px 0.4px 0 rgba(0,0,0,0.95),
+    0 0.4px 0 rgba(0,0,0,0.95),
+    0 -0.4px 0 rgba(0,0,0,0.95);
+}
+
+/* OAuth buttons unified appearance: force Roboto stack, consistent size/weight/spacing */
+.oauth-unified {
+  font-family: Roboto, 'Helvetica Neue', Arial, system-ui, -apple-system, 'Segoe UI';
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 500; /* medium */
+  letter-spacing: 0.2px;
+}
