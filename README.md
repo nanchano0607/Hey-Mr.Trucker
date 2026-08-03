@@ -116,7 +116,13 @@ capshop/
 
 ---
 
-## ERD
+## System Architecture & ERD
+
+### System Architecture
+
+![Hey Mr. Trucker System Architecture](docs/heymrtrucker-system-architecture.png)
+
+### ERD
 
 ![Capshop ERD](docs/capshop-erd.png)
 
