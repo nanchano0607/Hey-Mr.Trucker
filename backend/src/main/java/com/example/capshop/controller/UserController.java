@@ -8,6 +8,7 @@ import java.util.Optional;
 
 
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -187,9 +188,22 @@ public class UserController {
 
     // 계정 탈퇴 (본인용)
     @PostMapping("/api/user/{id}/delete")
-    public ResponseEntity<Map<String, String>> deleteUserAccount(@PathVariable("id") Long id) {
+    public ResponseEntity<Map<String, String>> deleteUserAccount(
+            @PathVariable("id") Long id,
+            @AuthenticationPrincipal User authenticatedUser,
+            HttpServletResponse response) {
         try {
+            if (authenticatedUser == null || !authenticatedUser.getId().equals(id)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("error", "본인 계정만 탈퇴할 수 있습니다."));
+            }
+
             userService.deleteUserAccount(id);
+            refreshTokenRepository.findByUserId(id).ifPresent(refreshTokenRepository::delete);
+            CookieUtil.deleteCookie(response, "refresh_token", false, "Lax");
+            CookieUtil.deleteCookie(response, "access_token", false, "Lax");
+            SecurityContextHolder.clearContext();
+
             return ResponseEntity.ok(Map.of("message", "계정이 탈퇴되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -236,6 +250,13 @@ public class UserController {
         Optional<User> userOpt = userService.authenticateLocalUser(request.getEmail(), request.getPassword());
         if (userOpt.isPresent()) {
             User user = userOpt.get();
+
+            if (user.isDeleted()) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of(
+                    "code", "WITHDRAWN_USER",
+                    "message", "탈퇴한 계정은 다시 로그인하거나 가입할 수 없습니다."
+                ));
+            }
             
             // 1) RT 발급 + DB 저장
             String refreshToken = tokenProvider.generateToken(user, Duration.ofDays(14));

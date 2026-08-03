@@ -12,6 +12,7 @@ export default function LoginPage({ success }: { success?: boolean }) {
   const { search } = useLocation();
   const params = new URLSearchParams(search);
   const redirect = params.get("redirect") || "/";
+  const oauthError = params.get("error") || "";
   const navigate = useNavigate();
   const { refresh, user, loading, setUser } = useAuth();
 
@@ -45,6 +46,13 @@ export default function LoginPage({ success }: { success?: boolean }) {
   const [resetVerified, setResetVerified] = useState(false);
   const [resetError, setResetError] = useState("");
   const [resetLoading, setResetLoading] = useState(false);
+
+  // OAuth 로그인 실패 메시지 표시
+  useEffect(() => {
+    if (oauthError) {
+      setError(oauthError);
+    }
+  }, [oauthError]);
 
   // OAuth access 토큰 교환 및 유저 정보 갱신
   useEffect(() => {
@@ -98,7 +106,12 @@ export default function LoginPage({ success }: { success?: boolean }) {
         navigate(redirect, { replace: true });
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || "로그인에 실패했습니다.");
+      const responseData = err.response?.data;
+      setError(
+        responseData?.message ||
+        (typeof responseData === "string" ? responseData : "") ||
+        "로그인에 실패했습니다."
+      );
     } finally {
       setIsLoading(false);
     }

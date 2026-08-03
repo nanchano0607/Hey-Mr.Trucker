@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "../../auth/useAuth";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiBase";
+import api from "../../lib/axios";
 
 const SERVER = API_BASE_URL;
 
@@ -52,12 +53,13 @@ type UserInfo = {
 };
 
 export default function License() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [editForm, setEditForm] = useState({
     name: "",
     phone: "",
@@ -179,6 +181,35 @@ export default function License() {
         emailMarketing: userInfo.emailMarketing || false,
         smsMarketing: userInfo.smsMarketing || false,
       });
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user?.id || isDeleting) return;
+
+    const confirmed = window.confirm(
+      "회원 탈퇴 후에는 동일한 로그인 계정으로 다시 가입할 수 없습니다.\n정말 탈퇴하시겠습니까?"
+    );
+    if (!confirmed) return;
+
+    setIsDeleting(true);
+    setMessage(null);
+    try {
+      const response = await api.post(`/api/user/${user.id}/delete`);
+      window.alert(response.data?.message || "회원 탈퇴가 완료되었습니다.");
+      await logout?.();
+      navigate("/login", { replace: true });
+    } catch (error: any) {
+      const responseData = error.response?.data;
+      showMessage(
+        "error",
+        responseData?.error ||
+          responseData?.message ||
+          (typeof responseData === "string" ? responseData : "") ||
+          "회원 탈퇴 처리 중 오류가 발생했습니다."
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -452,6 +483,22 @@ export default function License() {
                     </button>
                   </div>
                 )}
+
+                {!isEditing && (
+                  <div className="mt-8 border-t border-red-900/20 pt-6">
+                    <p className="mb-3 text-sm text-black/70">
+                      탈퇴 후에는 동일한 로그인 계정으로 다시 가입할 수 없습니다.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleDeleteAccount}
+                      disabled={isDeleting}
+                      className="w-full px-6 py-3 rounded-lg border-2 border-red-700 text-red-800 font-bold hover:bg-red-700 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isDeleting ? "탈퇴 처리 중..." : "회원 탈퇴"}
+                    </button>
+                  </div>
+                )}
                 </div>
               </div>
             ) : (
@@ -586,6 +633,22 @@ export default function License() {
                   </div>
                 )}
               </div>
+
+              {!isEditing && (
+                <div className="border-t border-red-300/30 pt-5">
+                  <p className="mb-3 text-sm text-white/70">
+                    탈퇴 후에는 동일한 로그인 계정으로 다시 가입할 수 없습니다.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleDeleteAccount}
+                    disabled={isDeleting}
+                    className="w-full h-12 rounded-md border border-red-400 text-red-300 font-bold hover:bg-red-600 hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    {isDeleting ? "탈퇴 처리 중..." : "회원 탈퇴"}
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-white">사용자 정보를 불러올 수 없습니다.</div>

@@ -105,6 +105,19 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         User existingUser = userService.findByProviderAndProviderUserId(provider, providerUserId);
 
         if (existingUser != null) {
+            if (existingUser.isDeleted()) {
+                log.info("탈퇴한 소셜 계정 로그인 차단: userId={}, provider={}", existingUser.getId(), provider);
+                clearAuthenticationAttributes(request, response);
+
+                String msg = URLEncoder.encode(
+                        "탈퇴한 계정은 다시 로그인하거나 가입할 수 없습니다.",
+                        StandardCharsets.UTF_8
+                );
+                String redirectUrl = buildFrontendUrl("/login") + "?error=" + msg;
+                getRedirectStrategy().sendRedirect(request, response, redirectUrl);
+                return;
+            }
+
             log.info("소셜 계정이 기존 사용자에 연결됨: userId={}, email={}", existingUser.getId(), existingUser.getEmail());
             // 기존 유저: 기존 방식대로 토큰 발급 및 로그인 처리
             String refreshToken = tokenProvider.generateToken(existingUser, REFRESH_TOKEN_DURATION);

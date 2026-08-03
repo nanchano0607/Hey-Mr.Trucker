@@ -328,6 +328,8 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         
         user.setDeleted(true);
+        // 탈퇴한 회원의 전화번호는 해제하여 다른 계정에서 다시 인증·사용할 수 있게 한다.
+        user.setPhone(null);
         userRepository.save(user);
     }
 
