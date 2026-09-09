@@ -50,6 +50,7 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
     private final CheckOutService checkOutService;
     private final com.example.capshop.repository.ProductRepository productRepository;
+    private final com.example.capshop.repository.ProductStockRepository productStockRepository;
     private final PaymentRepository paymentRepository;
     private final PointsService pointsService;
     private final UserCouponService userCouponService;
@@ -70,10 +71,11 @@ public class OrderService {
         return tossPaymentsSecretKey;
     }
     
-    public OrderService(OrderRepository orderRepository, 
+    public OrderService(OrderRepository orderRepository,
                        CartItemRepository cartItemRepository,
                        CheckOutService checkOutService,
                        com.example.capshop.repository.ProductRepository productRepository,
+                       com.example.capshop.repository.ProductStockRepository productStockRepository,
                        PaymentRepository paymentRepository,
                        PointsService pointsService,
                        UserCouponService userCouponService,
@@ -82,6 +84,7 @@ public class OrderService {
         this.cartItemRepository = cartItemRepository;
         this.checkOutService = checkOutService;
         this.productRepository = productRepository;
+        this.productStockRepository = productStockRepository;
         this.paymentRepository = paymentRepository;
         this.pointsService = pointsService;
         this.userCouponService = userCouponService;
@@ -91,6 +94,58 @@ public class OrderService {
         this.restTemplate = new RestTemplate();
         this.restTemplate.getMessageConverters()
             .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
+    }
+
+    // 재고 차감: 비관적 락(FOR UPDATE)으로 해당 재고 행을 잠근 뒤 확인/차감한다.
+    private void decreaseStockLocked(Long productId, String size, int quantity, String productName) {
+        if (size != null && !size.isBlank()) {
+            ProductStock productStock = productStockRepository.findByProductIdAndSizeForUpdate(productId, size)
+                    .orElseThrow(() -> new IllegalStateException(
+                            "ProductStock 정보를 찾을 수 없습니다. productId=" + productId + ", size=" + size));
+            if (productStock.getStock() == null || productStock.getStock() < quantity) {
+                throw new IllegalStateException("재고 부족: " + productName + " (사이즈: " + size + ", 재고: " + productStock.getStock() + ")");
+            }
+            productStock.decreaseStock(quantity);
+        } else {
+            Product product = productRepository.findByIdForUpdate(productId)
+                    .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다: " + productId));
+            if (product.getStock() == null || product.getStock() < quantity) {
+                throw new IllegalStateException("재고 부족: " + productName);
+            }
+            product.setStock(product.getStock() - quantity);
+        }
+    }
+
+    // 재고 복구(취소/반품): 동일하게 락을 잡고 증가시켜 동시 취소/반품 간 lost update를 막는다.
+    private void increaseStockLocked(Long productId, String size, int quantity) {
+        if (size != null && !size.isBlank()) {
+            ProductStock productStock = productStockRepository.findByProductIdAndSizeForUpdate(productId, size)
+                    .orElse(null);
+            if (productStock != null) {
+                productStock.increaseStock(quantity);
+            } else {
+                logger.warn("재고 복구 실패 - ProductStock을 찾을 수 없음: productId={}, size={}", productId, size);
+            }
+        } else {
+            Product product = productRepository.findByIdForUpdate(productId).orElse(null);
+            if (product != null && product.getStock() != null) {
+                product.setStock(product.getStock() + quantity);
+            }
+        }
+    }
+
+    // 한 주문 내 여러 상품에 락을 걸 때 항상 (productId, size) 오름차순으로 잠가 데드락을 방지한다.
+    private static final java.util.Comparator<OrderItem> ORDER_ITEM_LOCK_ORDER =
+            java.util.Comparator.<OrderItem, Long>comparing(oi -> oi.getProduct().getId())
+                    .thenComparing(oi -> oi.getSelectedSize() == null ? "" : oi.getSelectedSize());
+
+    // CheckOut.itemsJson(JsonNode 배열)도 동일한 (productId, size) 순서로 정렬해 락 순서를 통일한다.
+    private static List<JsonNode> sortItemsForLocking(JsonNode itemsNode) {
+        List<JsonNode> items = new java.util.ArrayList<>();
+        itemsNode.forEach(items::add);
+        items.sort(java.util.Comparator.<JsonNode, Long>comparing(n -> n.get("productId").asLong())
+                .thenComparing(n -> n.has("size") ? n.get("size").asText() : ""));
+        return items;
     }
 
     private void sendOrderCompletedSmsAfterCommit(User user, Order order) {
@@ -254,6 +309,7 @@ public class OrderService {
         return existing;
     }
 
+    @Transactional
     public Order placeOrder(User user) {
         List<CartItem> cartItems = cartItemRepository.findByUser(user);
 
@@ -263,21 +319,17 @@ public class OrderService {
 
         Order order = new Order(user);
 
-        for (CartItem cartItem : cartItems) {
+        // 여러 상품을 동시에 잠글 때 (productId, size) 오름차순으로 락을 걸어 데드락을 방지한다.
+        List<CartItem> sortedCartItems = cartItems.stream()
+                .sorted(java.util.Comparator.<CartItem, Long>comparing(ci -> ci.getProduct().getId())
+                        .thenComparing(ci -> ci.getSize() == null ? "" : ci.getSize()))
+                .collect(java.util.stream.Collectors.toList());
+
+        for (CartItem cartItem : sortedCartItems) {
             Product product = cartItem.getProduct();
             String size = cartItem.getSize();
 
-            // 사이즈별 재고 확인 및 차감
-            Long stockBySize = product.getStockBySize(size);
-            if (stockBySize == null || stockBySize < cartItem.getQuantity()) {
-                throw new IllegalStateException("재고 부족: " + product.getName() + " (사이즈: " + size + ", 재고: " + stockBySize + ")");
-            }
-
-            // ProductStock 객체를 통해 재고 차감
-            com.example.capshop.domain.ProductStock productStock = product.getProductStockBySize(size);
-            if (productStock != null) {
-                productStock.decreaseStock(cartItem.getQuantity());
-            }
+            decreaseStockLocked(product.getId(), size, cartItem.getQuantity(), product.getName());
 
             OrderItem orderItem = new OrderItem(product, cartItem.getQuantity(), product.getPrice(), size);
             order.addOrderItem(orderItem);
@@ -343,15 +395,12 @@ public void cancelOrder(Long orderId, RefundAccountRequest refundReq) {
     order.cancel();
     logger.info("주문 상태 CANCELLED로 변경 - orderId: {}", orderId);
 
-    // 재고 복구
-    for (OrderItem item : order.getOrderItems()) {
-        Product product = item.getProduct();
-        String size = item.getSelectedSize();
-
-        com.example.capshop.domain.ProductStock productStock = product.getProductStockBySize(size);
-        if (productStock != null) {
-            productStock.increaseStock(item.getQuantity());
-        }
+    // 재고 복구 (동시 취소/반품 간 lost update 방지를 위해 락 순서 정렬 후 처리)
+    List<OrderItem> sortedItemsForCancel = order.getOrderItems().stream()
+            .sorted(ORDER_ITEM_LOCK_ORDER)
+            .collect(java.util.stream.Collectors.toList());
+    for (OrderItem item : sortedItemsForCancel) {
+        increaseStockLocked(item.getProduct().getId(), item.getSelectedSize(), item.getQuantity());
     }
 
     // 결제 취소(토스)
@@ -466,21 +515,14 @@ public void cancelOrder(Long orderId, RefundAccountRequest refundReq) {
         order.completeReturn(); // RETURNED로 변경
         logger.info("주문 상태 RETURNED로 변경 - orderId: {}", orderId);
         
-        // 재고 복구
-        for (OrderItem item : order.getOrderItems()) {
-            Product product = item.getProduct();
-            String size = item.getSelectedSize();
-            
-            // 사이즈별 재고 복구
-            com.example.capshop.domain.ProductStock productStock = product.getProductStockBySize(size);
-            if (productStock != null) {
-                Long beforeStock = productStock.getStock();
-                productStock.increaseStock(item.getQuantity());
-                logger.info("반품 재고 복구 - productId: {}, size: {}, 변경 전: {}, 변경 후: {}", 
-                    product.getId(), size, beforeStock, productStock.getStock());
-            } else {
-                logger.warn("반품 재고 복구 실패 - ProductStock을 찾을 수 없음: productId={}, size={}", product.getId(), size);
-            }
+        // 재고 복구 (동시 취소/반품 간 lost update 방지를 위해 락 순서 정렬 후 처리)
+        List<OrderItem> sortedItemsForReturn = order.getOrderItems().stream()
+                .sorted(ORDER_ITEM_LOCK_ORDER)
+                .collect(java.util.stream.Collectors.toList());
+        for (OrderItem item : sortedItemsForReturn) {
+            increaseStockLocked(item.getProduct().getId(), item.getSelectedSize(), item.getQuantity());
+            logger.info("반품 재고 복구 - productId: {}, size: {}, 수량: {}",
+                item.getProduct().getId(), item.getSelectedSize(), item.getQuantity());
         }
         
         // 환불 처리
@@ -777,50 +819,23 @@ public void cancelOrder(Long orderId, RefundAccountRequest refundReq) {
         order.setAddress(checkOut.getAddress());
         order.setPhone(checkOut.getPhone());
         
-        for (JsonNode item : itemsNode) {
+        for (JsonNode item : sortItemsForLocking(itemsNode)) {
             Long productId = item.get("productId").asLong();
             int quantity = item.get("quantity").asInt();
             String size = item.has("size") ? item.get("size").asText() : null;
-            
+
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다: " + productId));
 
-            // ===== 재고 확인 및 차감 (사이즈별 기준) =====
-            if (size != null && !size.isBlank()) {
-                // 사이즈별 재고 체크
-                Long stockBySize = product.getStockBySize(size);
-                if (stockBySize == null || stockBySize < quantity) {
-                    throw new IllegalStateException("재고 부족: " + product.getName() +
-                            " (사이즈: " + size + ", 재고: " + stockBySize + ")");
-                }
+            decreaseStockLocked(productId, size, quantity, product.getName());
 
-                com.example.capshop.domain.ProductStock productStock = product.getProductStockBySize(size);
-                if (productStock == null) {
-                    throw new IllegalStateException(
-                            "ProductStock 정보를 찾을 수 없습니다. productId=" + productId + ", size=" + size);
-                }
-                productStock.decreaseStock(quantity);
-
-                // (선택) 총 재고 필드도 같이 관리한다면
-                if (product.getStock() != null) {
-                    product.setStock(product.getStock() - quantity);
-                }
-            } else {
-                // 사이즈가 없는 상품(ONE SIZE 등)이라면 기존 전체 재고 사용
-                if (product.getStock() == null || product.getStock() < quantity) {
-                    throw new IllegalStateException("재고 부족: " + product.getName());
-                }
-                product.setStock(product.getStock() - quantity);
-            }
-            // ==========================================
-            
             // OrderItem 생성 (가격 스냅샷 + 사이즈)
             OrderItem orderItem = new OrderItem(product, quantity, product.getPrice(), size);
             order.addOrderItem(orderItem);
         }
-        
+
         order.calculateTotalPrice();
-        
+
         // 4. 금액 검증 (토스 승인 금액 == 계산된 주문 금액)
         if (!order.getTotal_price().equals(amount)) {
             throw new RuntimeException("결제 금액 불일치");
@@ -930,7 +945,7 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
 
         Long calculatedOriginalAmount = 0L;
 
-        for (JsonNode item : itemsNode) {
+        for (JsonNode item : sortItemsForLocking(itemsNode)) {
             Long productId = item.get("productId").asLong();
             int quantity = item.get("quantity").asInt();
             String size = item.has("size") ? item.get("size").asText() : null;
@@ -938,33 +953,10 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
             Product product = productRepository.findById(productId)
                     .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다: " + productId));
 
-            // ===== 재고 확인 및 차감은 DONE일 때만 =====
+            // 재고 확인 및 차감은 DONE일 때만
             if (isDone) {
-                if (size != null && !size.isBlank()) {
-                    Long stockBySize = product.getStockBySize(size);
-                    if (stockBySize == null || stockBySize < quantity) {
-                        throw new IllegalStateException("재고 부족: " + product.getName() +
-                                " (사이즈: " + size + ", 재고: " + stockBySize + ")");
-                    }
-
-                    com.example.capshop.domain.ProductStock productStock = product.getProductStockBySize(size);
-                    if (productStock == null) {
-                        throw new IllegalStateException(
-                                "ProductStock 정보를 찾을 수 없습니다. productId=" + productId + ", size=" + size);
-                    }
-                    productStock.decreaseStock(quantity);
-
-                    if (product.getStock() != null) {
-                        product.setStock(product.getStock() - quantity);
-                    }
-                } else {
-                    if (product.getStock() == null || product.getStock() < quantity) {
-                        throw new IllegalStateException("재고 부족: " + product.getName());
-                    }
-                    product.setStock(product.getStock() - quantity);
-                }
+                decreaseStockLocked(productId, size, quantity, product.getName());
             }
-            // ========================================
 
             // OrderItem 생성 (가격 스냅샷 + 사이즈)
             OrderItem orderItem = new OrderItem(product, quantity, product.getPrice(), size);
@@ -1126,38 +1118,16 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
             throw new RuntimeException("입금 완료 금액 불일치: order.final_price=" + expectedFinal + ", savedPaymentAmount=" + finalAmount);
         }
 
-        // 2) 재고 차감
-        for (OrderItem item : order.getOrderItems()) {
+        // 2) 재고 차감 (여러 상품 락 순서 통일 후 처리)
+        List<OrderItem> sortedItemsForFinalize = order.getOrderItems().stream()
+                .sorted(ORDER_ITEM_LOCK_ORDER)
+                .collect(java.util.stream.Collectors.toList());
+        for (OrderItem item : sortedItemsForFinalize) {
             Product product = item.getProduct();
-            int quantity = item.getQuantity();
-            String size = item.getSelectedSize();
-
             if (product == null) {
                 throw new IllegalStateException("OrderItem에 product가 없습니다. orderId=" + order.getOrderId());
             }
-
-            if (size != null && !size.isBlank()) {
-                Long stockBySize = product.getStockBySize(size);
-                if (stockBySize == null || stockBySize < quantity) {
-                    throw new IllegalStateException("재고 부족: " + product.getName() +
-                            " (사이즈: " + size + ", 재고: " + stockBySize + ")");
-                }
-                ProductStock productStock = product.getProductStockBySize(size);
-                if (productStock == null) {
-                    throw new IllegalStateException(
-                            "ProductStock 정보를 찾을 수 없습니다. productId=" + product.getId() + ", size=" + size);
-                }
-                productStock.decreaseStock(quantity);
-
-                if (product.getStock() != null) {
-                    product.setStock(product.getStock() - quantity);
-                }
-            } else {
-                if (product.getStock() == null || product.getStock() < quantity) {
-                    throw new IllegalStateException("재고 부족: " + product.getName());
-                }
-                product.setStock(product.getStock() - quantity);
-            }
+            decreaseStockLocked(product.getId(), item.getSelectedSize(), item.getQuantity(), product.getName());
         }
 
         // 3) 쿠폰 사용 확정
