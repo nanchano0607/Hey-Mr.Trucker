@@ -1,6 +1,7 @@
 package com.example.capshop.domain.order;
 
 import com.example.capshop.domain.PaymentStatus;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -25,6 +26,7 @@ public class Payment {
     @JoinColumn(name = "order_id")
     private Order order;
     
+    @Column(unique = true)
     private String paymentKey;      // 토스 결제 고유키
     private String method;          // CARD, KAKAO_PAY, TOSS_PAY 등
     private Long amount;            // 결제 금액
