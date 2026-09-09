@@ -86,6 +86,7 @@ public class OrderController {
 
         return ResponseEntity.ok(Map.of(
                 "orderId", order.getId(),
+                "orderNumber", order.getOrderId(),
                 "status", order.getStatus(),
                 "totalPrice", order.getTotal_price()
         ));
