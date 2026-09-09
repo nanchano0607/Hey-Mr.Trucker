@@ -9,7 +9,7 @@ export default function SuccessPage() {
 
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [message, setMessage] = useState("");
-  const [orderIdResult, setOrderIdResult] = useState<number | null>(null);
+  const [orderNumberResult, setOrderNumberResult] = useState<string | null>(null);
 
   const hasConfirmed = useRef(false);
 
@@ -42,7 +42,7 @@ export default function SuccessPage() {
 
         const res = await api.post(`/api/orders/confirm`, requestData);
 
-        setOrderIdResult(res.data.orderId || res.data.id);
+        setOrderNumberResult(res.data.orderNumber || null);
         setStatus("success");
         setMessage("결제가 완료되었습니다!");
 
@@ -227,10 +227,10 @@ export default function SuccessPage() {
           <p className="text-[#01132c] font-bold">상태</p>
           <p className="mt-2 text-[#01132c]/80 text-sm">{message}</p>
 
-          {orderIdResult && (
+          {orderNumberResult && (
             <div className="mt-4 flex items-center justify-between rounded bg-white/60 border border-black/10 px-3 py-2">
               <span className="text-[#01132c] font-bold text-sm">주문번호</span>
-              <span className="text-[#01132c] font-mono text-sm">#{orderIdResult}</span>
+              <span className="text-[#01132c] font-mono text-sm">{orderNumberResult}</span>
             </div>
           )}
         </div>
