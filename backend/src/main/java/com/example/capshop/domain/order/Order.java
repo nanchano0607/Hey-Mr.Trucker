@@ -9,6 +9,7 @@ import com.example.capshop.domain.User;
 import com.example.capshop.domain.UserCoupon;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -33,6 +34,7 @@ public class Order {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(unique = true)
     private String orderId;         // 주문번호 (예: ORD20250131-1)
 
     @ManyToOne
