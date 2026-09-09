@@ -24,7 +24,12 @@ export default function AccPage() {
     fetch(`${SERVER}/api/acc/findAll`)
       .then((res) => res.json())
       .then((data) => {
-        const sorted = [...data].sort((a, b) => b.id - a.id);
+        const sorted = [...data].sort((a, b) => {
+          const soldOutA = (a.stock ?? 0) === 0;
+          const soldOutB = (b.stock ?? 0) === 0;
+          if (soldOutA !== soldOutB) return soldOutA ? 1 : -1;
+          return b.id - a.id;
+        });
         setAccs(sorted);
       });
   }, []);

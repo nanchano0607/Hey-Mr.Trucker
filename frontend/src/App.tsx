@@ -11,6 +11,7 @@ import MyGaragePage from "./pages/mygarage/MyGaragePage";
 import LicensePage from "./pages/mygarage/LicensePage";
 import { AuthProvider } from "./auth/AuthProvider";
 import ProtectedRoute from "./auth/ProtectedRoute";
+import CookieConsentBanner from "./components/CookieConsentBanner";
 
 
 import CapPage from "./pages/product/CapPage";
@@ -47,6 +48,7 @@ export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
+        <CookieConsentBanner />
         <Routes>
           <Route element={<RootLayout />}>
             <Route index element={<HomePage />} />
