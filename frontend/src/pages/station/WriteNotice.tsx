@@ -19,7 +19,7 @@ export default function WriteNotice() {
     try {
       setBusy(true);
       const body = { title: title.trim(), content: content.trim() };
-      await api.post(`${SERVER}/api/notices`, body, { params: { userId: user.id } });
+      await api.post(`${SERVER}/api/admin/notices`, body);
       alert("작성되었습니다.");
       navigate("/notices");
     } catch (err: any) {

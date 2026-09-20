@@ -88,66 +88,6 @@ public class UserController {
             return ResponseEntity.status(500).body(Map.of("error", "로그아웃 중 오류가 발생했습니다."));
         }
     }
-    
-    @PostMapping("/api/user/save")
-    public void saveUser(@RequestBody User user){
-        userService.save(user);
-    }
-    // 관리자: 사용자 목록 (DTO로 반환하여 순환 참조/중첩 방지)
-    @GetMapping("/api/admin/users")
-    public List<UserAdminResponse> allUser(){
-        return userService.findAll().stream()
-                .map(UserAdminResponse::new)
-                .toList();
-    }
-
-    // 관리자: 사용자 ID 목록 (프론트 배치 로딩용)
-    @GetMapping("/api/admin/users/ids")
-    public List<Long> allUserIds() {
-        return userService.findAll().stream()
-                .map(User::getId)
-                .toList();
-    }
-
-    // 관리자: 개별 사용자 조회 (DTO)
-    @GetMapping("/api/admin/users/{id}")
-    public ResponseEntity<UserAdminResponse> getUser(@PathVariable("id") Long id) {
-        User u = userService.findById(id);
-        if (u == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(new UserAdminResponse(u));
-    }
-
-    // 관리자: 권한 토글 (승격/해제)
-    @PostMapping("/api/admin/users/{id}/toggle-admin")
-    public ResponseEntity<Map<String, Object>> toggleAdmin(@PathVariable("id") Long id) {
-        try {
-            boolean isAdmin = userService.toggleAdmin(id);
-            String message = isAdmin ? "관리자 권한이 부여되었습니다." : "관리자 권한이 해제되었습니다.";
-            return ResponseEntity.ok(Map.of(
-                "message", message,
-                "admin", isAdmin
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    // 관리자: 사용자 상태 토글 (활성화/비활성화)
-    @PostMapping("/api/admin/users/{id}/toggle-status")
-    public ResponseEntity<Map<String, Object>> toggleUserStatus(@PathVariable("id") Long id) {
-        try {
-            boolean isDeleted = userService.toggleUserStatus(id);
-            String message = isDeleted ? "사용자가 비활성화되었습니다." : "사용자가 활성화되었습니다.";
-            return ResponseEntity.ok(Map.of(
-                "message", message,
-                "deleted", isDeleted
-            ));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
 
  
 

@@ -28,8 +28,8 @@ export default function RegisterPage() {
     if (namesOrUrls.length === 0) return;
 
     try {
-      // 서버에 공용 삭제 엔드포인트가 존재하는 것으로 보임 (/api/image/delete)
-      await fetch(`${API_BASE_URL}/api/image/delete`, {
+      // 서버에 공용 삭제 엔드포인트가 존재하는 것으로 보임 (/api/admin/image/delete)
+      await fetch(`${API_BASE_URL}/api/admin/image/delete`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -92,7 +92,7 @@ export default function RegisterPage() {
       const formData = new FormData();
 
       // 백엔드에 공용 업로드는 없고, CAP 업로드만 제공됨
-      const uploadEndpoint = `${API_BASE_URL}/api/product/upload`;
+      const uploadEndpoint = `${API_BASE_URL}/api/admin/product/upload`;
 
       if (mainImage) {
         formData.append("mainImage", mainImage);
@@ -137,10 +137,10 @@ export default function RegisterPage() {
       // 2) 상품 저장
       const saveEndpoint =
         productType === "CAP"
-          ? `${API_BASE_URL}/api/cap/save`
+          ? `${API_BASE_URL}/api/admin/cap/save`
           : productType === "ACC"
-          ? `${API_BASE_URL}/api/acc/save`
-          : `${API_BASE_URL}/api/vintage/save`;
+          ? `${API_BASE_URL}/api/admin/acc/save`
+          : `${API_BASE_URL}/api/admin/vintage/save`;
 
       const saveRes = await fetch(saveEndpoint, {
         method: "POST",

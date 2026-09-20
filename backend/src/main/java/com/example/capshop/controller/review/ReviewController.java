@@ -157,15 +157,4 @@ public class ReviewController {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }
     }
-    
-    // 관리자: 리뷰 삭제 (관리자 권한)
-    @DeleteMapping("/api/reviews/admin/{reviewId}")
-    public ResponseEntity<?> deleteReviewByAdmin(@PathVariable("reviewId") Long reviewId) {
-        try {
-            reviewService.deleteReviewByAdmin(reviewId);
-            return ResponseEntity.ok(Map.of("message", "리뷰가 삭제되었습니다."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
 }

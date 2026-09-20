@@ -179,7 +179,7 @@ export default function LogBookPage() {
         formData.append("file", file);
 
         // 1) 실제 파일 업로드
-        const upRes = await api.post(`${API_BASE}/api/upload`, formData, {
+        const upRes = await api.post(`${API_BASE}/api/admin/upload`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
@@ -190,7 +190,7 @@ export default function LogBookPage() {
         }
 
         // 2) logbook 엔티티 생성
-        await api.post(`${API_BASE}/api/logbook`, {
+        await api.post(`${API_BASE}/api/admin/logbook`, {
           imageUrl,
         });
       }
@@ -213,14 +213,14 @@ export default function LogBookPage() {
     setError(null);
     try {
       // 1) DB 엔트리 삭제
-      await api.delete(`${API_BASE}/api/logbook/${item.id}`);
+      await api.delete(`${API_BASE}/api/admin/logbook/${item.id}`);
 
       // 2) 실제 파일 삭제
       try {
         const urlObj = new URL(item.imageUrl);
         const parts = urlObj.pathname.split("/");
         const filename = parts[parts.length - 1];
-        await api.post(`${API_BASE}/api/image/delete`, [filename]);
+        await api.post(`${API_BASE}/api/admin/image/delete`, [filename]);
       } catch (e) {
         console.warn("이미지 파일 삭제 실패(무시 가능):", e);
       }

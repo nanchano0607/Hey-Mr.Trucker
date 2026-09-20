@@ -97,7 +97,7 @@ export default function StockistPage() {
         const formData = new FormData();
         formData.append("file", file);
 
-        const uploadRes = await api.post(`/api/upload`, formData, {
+        const uploadRes = await api.post(`/api/admin/upload`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
 
@@ -128,7 +128,7 @@ export default function StockistPage() {
       await api.delete(`/api/stockist/${item.id}`);
 
       try {
-        await api.post(`/api/image/delete`, [item.imageUrl]);
+        await api.post(`/api/admin/image/delete`, [item.imageUrl]);
       } catch (deleteFileError) {
         console.warn("판매점 이미지 파일 삭제 실패:", deleteFileError);
       }

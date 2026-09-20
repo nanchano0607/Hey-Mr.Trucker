@@ -28,7 +28,7 @@ async function uploadToCap(file: File): Promise<string> {
   fd.append("file", file);
 
   try {
-    const res = await api.post(`/api/upload`, fd, {
+    const res = await api.post(`/api/admin/upload`, fd, {
       // Content-Type은 자동으로 FormData boundary로 설정되도록 비워둡니다.
       validateStatus: (s) => s >= 200 && s < 300,
     });
@@ -54,7 +54,7 @@ async function deleteImages(namesOrUrls: string[]): Promise<{ success: string[];
 {
   try {
     const res = await api.post(
-      `/api/image/delete`,
+      `/api/admin/image/delete`,
       namesOrUrls,
       { validateStatus: (s) => s >= 200 && s < 300 }
     );
@@ -129,7 +129,7 @@ export default function StoryManagement({ isOpen, onToggle }: StoryManagementPro
 
       // 3) 스토리 엔티티에 파일명 저장
       const res = await api.post(
-        `/api/story/background`,
+        `/api/admin/story/background`,
         null,
         { params: { filename }, validateStatus: (s) => s >= 200 && s < 300 }
       );
@@ -172,7 +172,7 @@ export default function StoryManagement({ isOpen, onToggle }: StoryManagementPro
 
       // 3) 스토리 엔티티에 파일명 저장
       const res = await api.post(
-        `/api/story/content`,
+        `/api/admin/story/content`,
         null,
         { params: { filename }, validateStatus: (s) => s >= 200 && s < 300 }
       );
@@ -305,7 +305,7 @@ export default function StoryManagement({ isOpen, onToggle }: StoryManagementPro
             </div>
 
             <div className="mt-2 text-xs text-gray-600">
-              업로드는 `/api/upload`(cap 폴더)로 진행됩니다.
+              업로드는 `/api/admin/upload`(cap 폴더)로 진행됩니다.
             </div>
           </div>
         </div>

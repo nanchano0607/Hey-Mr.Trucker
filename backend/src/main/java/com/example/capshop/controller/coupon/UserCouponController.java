@@ -25,19 +25,6 @@ public class UserCouponController {
     
     private final UserCouponService userCouponService;
     
-    // 사용자에게 쿠폰 지급 (관리자 - 쿠폰 ID로)
-    @PostMapping("/admin/issue/{couponId}")
-    public ResponseEntity<?> issueCouponToUserById(
-            @PathVariable("couponId") Long couponId,
-            @RequestParam("userId") Long userId) {
-        try {
-            UserCouponResponse userCoupon = userCouponService.issueCouponToUserById(userId, couponId);
-            return ResponseEntity.ok(userCoupon);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-    
     // 사용자의 모든 쿠폰 조회
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getUserCoupons(@PathVariable("userId") Long userId) {

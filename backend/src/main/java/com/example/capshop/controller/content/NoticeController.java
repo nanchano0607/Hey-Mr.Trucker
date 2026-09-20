@@ -4,19 +4,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.capshop.dto.content.NoticeCreateRequest;
 import com.example.capshop.dto.content.NoticeResponse;
-import com.example.capshop.dto.content.NoticeUpdateRequest;
 import com.example.capshop.service.content.NoticeService;
 
 import lombok.RequiredArgsConstructor;
@@ -44,46 +37,6 @@ public class NoticeController {
             return ResponseEntity.ok(res);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    // 관리자: 공지 생성 (userId required, 관리자 권한 확인)
-    @PostMapping("/api/notices")
-    public ResponseEntity<?> createNotice(
-            @RequestParam(name = "userId") Long userId,
-            @RequestBody NoticeCreateRequest req) {
-        try {
-            NoticeResponse res = noticeService.createNotice(userId, req);
-            return ResponseEntity.ok(res);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    // 관리자: 공지 수정
-    @PutMapping("/api/notices/{id}")
-    public ResponseEntity<?> updateNotice(
-            @PathVariable("id") Long id,
-            @RequestParam(name = "userId") Long userId,
-            @RequestBody NoticeUpdateRequest req) {
-        try {
-            NoticeResponse res = noticeService.updateNotice(userId, id, req);
-            return ResponseEntity.ok(res);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
-        }
-    }
-
-    // 관리자: 공지 삭제
-    @DeleteMapping("/api/notices/{id}")
-    public ResponseEntity<?> deleteNotice(
-            @PathVariable("id") Long id,
-            @RequestParam(name = "userId") Long userId) {
-        try {
-            noticeService.deleteNotice(userId, id);
-            return ResponseEntity.ok(Map.of("message", "삭제되었습니다."));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(403).body(Map.of("error", e.getMessage()));
         }
     }
 }

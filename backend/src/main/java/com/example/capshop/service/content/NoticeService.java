@@ -8,11 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.capshop.domain.content.Notice;
+import com.example.capshop.domain.user.User;
 import com.example.capshop.dto.content.NoticeCreateRequest;
 import com.example.capshop.dto.content.NoticeResponse;
 import com.example.capshop.dto.content.NoticeUpdateRequest;
 import com.example.capshop.repository.content.NoticeRepository;
-import com.example.capshop.service.user.UserService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +20,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class NoticeService {
     private final NoticeRepository noticeRepository;
-    private final UserService userService;
 
     @Transactional(readOnly = true)
     public List<NoticeResponse> listAll() {
@@ -36,25 +35,16 @@ public class NoticeService {
     }
 
     @Transactional
-    public NoticeResponse createNotice(Long userId, NoticeCreateRequest req) {
-        if (!isAdmin(userId)) {
-            throw new IllegalArgumentException("관리자 권한이 필요합니다.");
-        }
+    public NoticeResponse createNotice(User author, NoticeCreateRequest req) {
+        String authorName = author.getName() != null ? author.getName() : author.getEmail();
 
-        var user = userService.findById(userId);
-        String authorName = user.getName() != null ? user.getName() : user.getEmail();
-        
         Notice notice = new Notice(req.getTitle(), req.getContent(), authorName);
         Notice saved = noticeRepository.save(notice);
         return new NoticeResponse(saved);
     }
 
     @Transactional
-    public NoticeResponse updateNotice(Long userId, Long id, NoticeUpdateRequest req) {
-        if (!isAdmin(userId)) {
-            throw new IllegalArgumentException("관리자 권한이 필요합니다.");
-        }
-
+    public NoticeResponse updateNotice(Long id, NoticeUpdateRequest req) {
         Notice notice = noticeRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("공지사항을 찾을 수 없습니다."));
 
@@ -66,20 +56,7 @@ public class NoticeService {
     }
 
     @Transactional
-    public void deleteNotice(Long userId, Long id) {
-        if (!isAdmin(userId)) {
-            throw new IllegalArgumentException("관리자 권한이 필요합니다.");
-        }
+    public void deleteNotice(Long id) {
         noticeRepository.deleteById(id);
-    }
-
-    private boolean isAdmin(Long userId) {
-        if (userId == null) return false;
-        try {
-            var user = userService.findById(userId);
-            return user != null && Boolean.TRUE.equals(user.isAdmin());
-        } catch (Exception e) {
-            return false;
-        }
     }
 }

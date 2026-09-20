@@ -77,7 +77,7 @@ export default function QnAPage() {
     if (!confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-      await api.delete(`${SERVER}/api/notices/${id}`, { params: { userId: user.id } });
+      await api.delete(`${SERVER}/api/admin/notices/${id}`);
       await fetchNotices();
     } catch (err: any) {
       console.error(err);
