@@ -85,7 +85,7 @@ export default function PopupManagement({
       const formData = new FormData();
       formData.append("file", file);
 
-      const response = await api.post("/api/upload", formData, {
+      const response = await api.post("/api/admin/upload", formData, {
         validateStatus: (status) => status >= 200 && status < 300,
       });
 

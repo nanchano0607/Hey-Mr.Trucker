@@ -182,7 +182,7 @@ export default function ProductManagement({
         endpoint = "vintage";
       }
       const response = await fetch(
-        `${SERVER}/api/${endpoint}/updateStock/${productId}/${size}`,
+        `${SERVER}/api/admin/${endpoint}/updateStock/${productId}/${size}`,
         {
           method: "POST",
           headers: {
@@ -257,7 +257,7 @@ export default function ProductManagement({
 
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/product/${productId}/price`, {
+      const response = await fetch(`${SERVER}/api/admin/product/${productId}/price`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -304,7 +304,7 @@ export default function ProductManagement({
 
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/product/${productId}/price`, {
+      const response = await fetch(`${SERVER}/api/admin/product/${productId}/price`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -346,7 +346,7 @@ export default function ProductManagement({
         endpoint = "vintage";
       }
       const response = await fetch(
-        `${SERVER}/api/${endpoint}/updateStock/${productId}/${size}`,
+        `${SERVER}/api/admin/${endpoint}/updateStock/${productId}/${size}`,
         {
           method: "POST",
           headers: {
@@ -438,7 +438,7 @@ export default function ProductManagement({
     if (namesOrUrls.length === 0) return;
 
     try {
-      await fetch(`${SERVER}/api/image/delete`, {
+      await fetch(`${SERVER}/api/admin/image/delete`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -476,7 +476,7 @@ export default function ProductManagement({
         mainFormData.append("mainImage", newMainImage);
         mainFormData.append("productId", editingProduct.id.toString());
 
-        const uploadRes = await fetch(`${SERVER}/api/product/upload/main`, {
+        const uploadRes = await fetch(`${SERVER}/api/admin/product/upload/main`, {
           method: "POST",
           headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -508,7 +508,7 @@ export default function ProductManagement({
         });
         imagesFormData.append("productId", editingProduct.id.toString());
 
-        const uploadRes = await fetch(`${SERVER}/api/product/upload/images`, {
+        const uploadRes = await fetch(`${SERVER}/api/admin/product/upload/images`, {
           method: "POST",
           headers: {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),

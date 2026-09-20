@@ -567,7 +567,7 @@ export default function UserManagement({ isOpen, onToggle }: UserManagementProps
                   for (const userId of selectedIds) {
                     try {
                       const token = localStorage.getItem('access_token');
-                      const res = await fetch(`${SERVER}/api/user-coupons/admin/issue/${couponToIssue}?userId=${userId}`, {
+                      const res = await fetch(`${SERVER}/api/admin/user-coupons/issue/${couponToIssue}?userId=${userId}`, {
                         method: 'POST',
                         headers: {
                           'Content-Type': 'application/json',

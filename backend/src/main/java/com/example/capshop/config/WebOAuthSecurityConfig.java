@@ -1,11 +1,11 @@
 package com.example.capshop.config;
 
-import com.example.capshop.repository.OAuth2AuthorizationRequestBasedOnCookieRepository;
-import com.example.capshop.repository.RefreshTokenRepository;
-import com.example.capshop.service.OAuth2UserCustomService;
-import com.example.capshop.service.UserService;
+import com.example.capshop.repository.user.OAuth2AuthorizationRequestBasedOnCookieRepository;
+import com.example.capshop.repository.user.RefreshTokenRepository;
+import com.example.capshop.service.user.OAuth2UserCustomService;
+import com.example.capshop.service.user.UserService;
 import lombok.RequiredArgsConstructor;
-import com.example.capshop.service.SocialSignupTokenService;
+import com.example.capshop.service.user.SocialSignupTokenService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;

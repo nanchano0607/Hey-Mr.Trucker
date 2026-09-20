@@ -1,10 +1,10 @@
 package com.example.capshop.config;
 
-import com.example.capshop.domain.RefreshToken;
-import com.example.capshop.domain.User;
-import com.example.capshop.repository.OAuth2AuthorizationRequestBasedOnCookieRepository;
-import com.example.capshop.repository.RefreshTokenRepository;
-import com.example.capshop.service.UserService;
+import com.example.capshop.domain.user.RefreshToken;
+import com.example.capshop.domain.user.User;
+import com.example.capshop.repository.user.OAuth2AuthorizationRequestBasedOnCookieRepository;
+import com.example.capshop.repository.user.RefreshTokenRepository;
+import com.example.capshop.service.user.UserService;
 import com.example.capshop.util.CookieUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -32,7 +32,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private final RefreshTokenRepository refreshTokenRepository;
     private final OAuth2AuthorizationRequestBasedOnCookieRepository authorizationRequestRepository;
     private final UserService userService;
-    private final com.example.capshop.service.SocialSignupTokenService socialSignupTokenService;
+    private final com.example.capshop.service.user.SocialSignupTokenService socialSignupTokenService;
     private final String frontendBaseUrl;
     private final boolean cookieSecure;
     private final String cookieSameSite;
@@ -42,7 +42,7 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
             RefreshTokenRepository refreshTokenRepository,
             OAuth2AuthorizationRequestBasedOnCookieRepository authorizationRequestRepository,
             UserService userService,
-            com.example.capshop.service.SocialSignupTokenService socialSignupTokenService,
+            com.example.capshop.service.user.SocialSignupTokenService socialSignupTokenService,
             String frontendBaseUrl,
             boolean cookieSecure,
             String cookieSameSite

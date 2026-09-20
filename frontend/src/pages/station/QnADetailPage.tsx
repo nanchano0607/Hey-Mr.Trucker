@@ -52,7 +52,7 @@ export default function QnADetailPage() {
     if (!user?.isAdmin) return alert("관리자만 삭제할 수 있습니다.");
     if (!confirm("정말 삭제하시겠습니까?")) return;
     try {
-      await api.delete(`${SERVER}/api/notices/${notice.id}`, { params: { userId: user.id } });
+      await api.delete(`${SERVER}/api/admin/notices/${notice.id}`);
       alert("삭제되었습니다.");
       navigate(-1);
     } catch (err: any) {

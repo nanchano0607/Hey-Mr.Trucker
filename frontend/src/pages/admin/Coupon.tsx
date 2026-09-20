@@ -47,7 +47,7 @@ export default function Coupon({ isOpen, onToggle }: CouponAdminProps) {
     setError("");
     try {
       const token = getAccessToken();
-      const url = `${API_BASE_URL}/api/coupons/admin`;
+      const url = `${API_BASE_URL}/api/admin/coupons`;
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -79,7 +79,7 @@ export default function Coupon({ isOpen, onToggle }: CouponAdminProps) {
     setError("");
     try {
       const token = getAccessToken();
-      const url = `${API_BASE_URL}/api/coupons/admin/all`;
+      const url = `${API_BASE_URL}/api/admin/coupons/all`;
       const res = await fetch(url, {
         method: "GET",
         headers: {

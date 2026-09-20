@@ -106,7 +106,7 @@ export default function NewPage() {
       const token = localStorage.getItem("access_token");
       // 각 선택된 모자의 isNew를 true로 설정
       const promises = selectedProductIds.map((id) =>
-        fetch(`${SERVER}/api/cap/setNew/${id}`, { 
+        fetch(`${SERVER}/api/admin/cap/setNew/${id}`, { 
           method: "POST",
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         })
@@ -138,7 +138,7 @@ export default function NewPage() {
 
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/product/unsetNew/${productId}`, {
+      const response = await fetch(`${SERVER}/api/admin/product/unsetNew/${productId}`, {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });

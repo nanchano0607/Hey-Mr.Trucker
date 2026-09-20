@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiBase";
+import { PASSWORD_GUIDANCE, PASSWORD_MIN_LENGTH, validatePassword } from "../../utils/passwordPolicy";
 
 const API = API_BASE_URL;
 
@@ -37,9 +38,10 @@ export default function SignUp() {
       return;
     }
 
-    // 비밀번호 길이 검증
-    if (password.length < 6) {
-      setError("비밀번호는 최소 6자 이상이어야 합니다.");
+    // 비밀번호 정책 검증 (영문·숫자·특수문자 각 1개 이상, 8자 이상)
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      setError(passwordError);
       return;
     }
 
@@ -170,10 +172,11 @@ export default function SignUp() {
             onChange={(e) => setPassword(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             style={{ fontFamily: 'sans-serif' }}
-            placeholder="최소 6자 이상"
+            placeholder="영문, 숫자, 특수문자 포함 8자 이상"
             required
-            minLength={6}
+            minLength={PASSWORD_MIN_LENGTH}
           />
+          <p className="mt-1 text-xs text-gray-500">{PASSWORD_GUIDANCE}</p>
         </div>
 
         <div>

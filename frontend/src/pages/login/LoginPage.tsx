@@ -4,6 +4,7 @@ import { useAuth } from "../../auth/useAuth";
 import axios from "axios";
 import { setAccessToken } from "../../lib/token";
 import { API_BASE_URL } from "../../config/apiBase";
+import { PASSWORD_GUIDANCE, validatePassword } from "../../utils/passwordPolicy";
 
 const API = API_BASE_URL;
 const SERVER = API_BASE_URL;
@@ -193,6 +194,8 @@ export default function LoginPage({ success }: { success?: boolean }) {
   const handleResetPassword = async () => {
     setResetError("");
     if (!resetEmail || !resetPhone || !resetNewPassword || !resetVerified) return setResetError("모든 필드를 입력하고 인증하세요.");
+    const passwordError = validatePassword(resetNewPassword);
+    if (passwordError) return setResetError(passwordError);
     setResetLoading(true);
     try {
       await axios.post(`${API}/api/auth/reset-password`, { email: resetEmail, phone: resetPhone, newPassword: resetNewPassword });
@@ -537,6 +540,7 @@ export default function LoginPage({ success }: { success?: boolean }) {
                   style={{ fontFamily: "Noto Sans KR, 'Apple SD Gothic Neo', 'Nanum Gothic', system-ui, -apple-system, 'Segoe UI'" }}
                   placeholder="새 비밀번호를 입력하세요"
                 />
+                <p className="mt-1 text-xs text-gray-500">{PASSWORD_GUIDANCE}</p>
               </div>
               {resetError && (
                 <div className="text-red-500 text-sm" style={{ fontFamily: "Noto Sans KR, 'Apple SD Gothic Neo', 'Nanum Gothic', system-ui, -apple-system, 'Segoe UI'" }}>{resetError}</div>

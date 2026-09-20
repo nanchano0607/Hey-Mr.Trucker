@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { API_BASE_URL } from "../../config/apiBase";
 import api from "../../lib/axios";
 
@@ -28,7 +28,7 @@ async function uploadToCap(file: File): Promise<string> {
   fd.append("file", file);
 
   try {
-    const res = await api.post(`/api/upload`, fd, {
+    const res = await api.post(`/api/admin/upload`, fd, {
       // Content-Type은 자동으로 FormData boundary로 설정되도록 비워둡니다.
       validateStatus: (s) => s >= 200 && s < 300,
     });
@@ -54,7 +54,7 @@ async function deleteImages(namesOrUrls: string[]): Promise<{ success: string[];
 {
   try {
     const res = await api.post(
-      `/api/image/delete`,
+      `/api/admin/image/delete`,
       namesOrUrls,
       { validateStatus: (s) => s >= 200 && s < 300 }
     );
@@ -67,6 +67,97 @@ async function deleteImages(namesOrUrls: string[]): Promise<{ success: string[];
     console.error("deleteImages error", e);
     return { success: [], fail: namesOrUrls };
   }
+}
+
+interface PendingFilePickerProps {
+  accept: string;
+  file: File | null;
+  onChange: (file: File | null) => void;
+  onApply: () => void;
+  disabled: boolean;
+  previewClassName: string;
+}
+
+/** '설정하기'로 파일을 고르면 적용 전 미리보기를 보여주고, '적용'으로 서버에 반영한다. */
+function PendingFilePicker({
+  accept,
+  file,
+  onChange,
+  onApply,
+  disabled,
+  previewClassName,
+}: PendingFilePickerProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+
+  useEffect(() => {
+    if (!file) {
+      setPreviewUrl("");
+      // 같은 파일을 다시 고르더라도 change 이벤트가 발생하도록 입력값을 비운다.
+      if (inputRef.current) inputRef.current.value = "";
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+
+  const previewIsVideo = !!file && file.type.startsWith("video/");
+
+  return (
+    <div className="mt-3 space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept={accept}
+          onChange={(e) => onChange(e.target.files?.[0] ?? null)}
+          className="hidden"
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={disabled}
+          className="px-3 py-1 border rounded text-sm bg-blue-300 hover:bg-blue-200 disabled:opacity-60"
+        >
+          설정하기
+        </button>
+        <span className="text-sm text-gray-700 break-all">
+          {file ? file.name : "선택된 파일 없음"}
+        </span>
+      </div>
+
+      {file && previewUrl && (
+        <div>
+          <div className="text-sm text-gray-700 mb-2">적용 전 미리보기:</div>
+          <div className={`w-full bg-gray-200 rounded overflow-hidden ${previewClassName}`}>
+            {previewIsVideo ? (
+              <video
+                src={previewUrl}
+                className="w-full h-full object-cover"
+                autoPlay
+                loop
+                muted
+                playsInline
+                controls
+              />
+            ) : (
+              <img src={previewUrl} alt="적용 전 미리보기" className="w-full h-full object-cover" />
+            )}
+          </div>
+        </div>
+      )}
+
+      <button
+        type="button"
+        onClick={onApply}
+        disabled={disabled || !file}
+        className="px-4 py-1.5 rounded text-sm font-semibold bg-blue-600 text-white hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        적용
+      </button>
+    </div>
+  );
 }
 
 interface StoryManagementProps {
@@ -129,7 +220,7 @@ export default function StoryManagement({ isOpen, onToggle }: StoryManagementPro
 
       // 3) 스토리 엔티티에 파일명 저장
       const res = await api.post(
-        `/api/story/background`,
+        `/api/admin/story/background`,
         null,
         { params: { filename }, validateStatus: (s) => s >= 200 && s < 300 }
       );
@@ -172,7 +263,7 @@ export default function StoryManagement({ isOpen, onToggle }: StoryManagementPro
 
       // 3) 스토리 엔티티에 파일명 저장
       const res = await api.post(
-        `/api/story/content`,
+        `/api/admin/story/content`,
         null,
         { params: { filename }, validateStatus: (s) => s >= 200 && s < 300 }
       );
@@ -237,21 +328,14 @@ export default function StoryManagement({ isOpen, onToggle }: StoryManagementPro
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-2">
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setBgFile(e.target.files?.[0] ?? null)}
-                className="text-sm"
-              />
-              <button
-                onClick={applyBackground}
-                disabled={loading}
-                className="px-3 py-1 border rounded text-sm bg-blue-300 hover:bg-blue-200 disabled:opacity-60"
-              >
-                적용
-              </button>
-            </div>
+            <PendingFilePicker
+              accept="image/*"
+              file={bgFile}
+              onChange={setBgFile}
+              onApply={applyBackground}
+              disabled={loading}
+              previewClassName="h-40"
+            />
           </div>
 
           <div className="border rounded p-3">
@@ -288,25 +372,14 @@ export default function StoryManagement({ isOpen, onToggle }: StoryManagementPro
               </div>
             </div>
 
-            <div className="mt-3 flex items-center gap-2">
-              <input
-                type="file"
-                accept="image/*,video/*"
-                onChange={(e) => setContentFile(e.target.files?.[0] ?? null)}
-                className="text-sm"
-              />
-              <button
-                onClick={applyContent}
-                disabled={loading}
-                className="px-3 py-1 border rounded text-sm bg-blue-300 hover:bg-blue-200 disabled:opacity-60"
-              >
-                적용
-              </button>
-            </div>
-
-            <div className="mt-2 text-xs text-gray-600">
-              업로드는 `/api/upload`(cap 폴더)로 진행됩니다.
-            </div>
+            <PendingFilePicker
+              accept="image/*,video/*"
+              file={contentFile}
+              onChange={setContentFile}
+              onApply={applyContent}
+              disabled={loading}
+              previewClassName="h-56"
+            />
           </div>
         </div>
       )}
