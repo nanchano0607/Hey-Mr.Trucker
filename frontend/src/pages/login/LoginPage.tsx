@@ -43,6 +43,7 @@ export default function LoginPage({ success }: { success?: boolean }) {
   const [resetPhone, setResetPhone] = useState("");
   const [resetCode, setResetCode] = useState("");
   const [resetNewPassword, setResetNewPassword] = useState("");
+  const [resetNewPasswordConfirm, setResetNewPasswordConfirm] = useState("");
   const [resetCodeSent, setResetCodeSent] = useState(false);
   const [resetVerified, setResetVerified] = useState(false);
   const [resetError, setResetError] = useState("");
@@ -200,12 +201,15 @@ export default function LoginPage({ success }: { success?: boolean }) {
   const handleResetPassword = async () => {
     setResetError("");
     if (!resetEmail || !resetPhone || !resetNewPassword || !resetVerified) return setResetError("모든 필드를 입력하고 인증하세요.");
+    if (resetNewPassword !== resetNewPasswordConfirm) return setResetError("새 비밀번호가 일치하지 않습니다.");
     const passwordError = validatePassword(resetNewPassword);
     if (passwordError) return setResetError(passwordError);
     setResetLoading(true);
     try {
       await axios.post(`${API}/api/auth/reset-password`, { email: resetEmail, phone: resetPhone, newPassword: resetNewPassword });
       alert("비밀번호가 재설정되었습니다.");
+      setResetNewPassword("");
+      setResetNewPasswordConfirm("");
       setShowResetPasswordModal(false);
     } catch (err: any) {
       const message = err.response?.data?.error || "비밀번호 재설정에 실패했습니다.";
@@ -554,6 +558,20 @@ export default function LoginPage({ success }: { success?: boolean }) {
                 />
                 <p className="mt-1 text-xs text-gray-500">{PASSWORD_GUIDANCE}</p>
               </div>
+              <div>
+                <label className="block text-sm font-medium mb-1" style={{ fontFamily: "Noto Sans KR, 'Apple SD Gothic Neo', 'Nanum Gothic', system-ui, -apple-system, 'Segoe UI'" }}>새 비밀번호 확인</label>
+                <input
+                  type="password"
+                  value={resetNewPasswordConfirm}
+                  onChange={(e) => setResetNewPasswordConfirm(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  style={{ fontFamily: "Noto Sans KR, 'Apple SD Gothic Neo', 'Nanum Gothic', system-ui, -apple-system, 'Segoe UI'" }}
+                  placeholder="새 비밀번호를 다시 입력하세요"
+                />
+                {resetNewPasswordConfirm && resetNewPassword !== resetNewPasswordConfirm && (
+                  <p className="mt-1 text-xs text-red-500" style={{ fontFamily: "Noto Sans KR, 'Apple SD Gothic Neo', 'Nanum Gothic', system-ui, -apple-system, 'Segoe UI'" }}>비밀번호가 일치하지 않습니다.</p>
+                )}
+              </div>
               {resetError && (
                 <div className="text-red-500 text-sm" style={{ fontFamily: "Noto Sans KR, 'Apple SD Gothic Neo', 'Nanum Gothic', system-ui, -apple-system, 'Segoe UI'" }}>{resetError}</div>
               )}
@@ -573,6 +591,7 @@ export default function LoginPage({ success }: { success?: boolean }) {
                     setResetPhone("");
                     setResetCode("");
                     setResetNewPassword("");
+                    setResetNewPasswordConfirm("");
                     setResetCodeSent(false);
                     setResetVerified(false);
                     setResetError("");
