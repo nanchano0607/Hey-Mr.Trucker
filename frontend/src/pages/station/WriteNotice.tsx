@@ -32,7 +32,7 @@ export default function WriteNotice() {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center bg-no-repeat flex items-end"
+      className="min-h-screen bg-cover bg-center bg-no-repeat flex items-end font-sans"
       style={{ backgroundImage: `url(${SERVER}/images/emptyload.webp)` }}
     >
       <div className="w-full">
