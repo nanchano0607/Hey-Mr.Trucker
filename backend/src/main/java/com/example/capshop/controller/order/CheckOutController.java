@@ -31,11 +31,11 @@ public class CheckOutController {
     public ResponseEntity<CheckOut> save(
             @AuthenticationPrincipal User user,
             @RequestBody CheckOut body) {
-        // 인증된 사용자의 ID를 자동으로 설정
-        if (user != null) {
-            body.setUserId(user.getId());
+        if (user == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
-        CheckOut saved = checkOutService.save(body);
+        // 본문의 id/userId 는 무시하고 로그인한 사용자 소유의 새 체크아웃으로 저장한다.
+        CheckOut saved = checkOutService.create(user, body);
         return ResponseEntity
                 .created(URI.create("/api/checkout/" + saved.getId()))
                 .body(saved);
@@ -43,8 +43,10 @@ public class CheckOutController {
 
 
     @GetMapping("/{id}")
-    public ResponseEntity<CheckOutResponse> getCheckout(@PathVariable("id") Long id) {
-        CheckOut checkOut = checkOutService.findById(id)
+    public ResponseEntity<CheckOutResponse> getCheckout(
+            @PathVariable("id") Long id,
+            @AuthenticationPrincipal User user) {
+        CheckOut checkOut = checkOutService.findOwned(id, user)
                 .orElse(null);
         if (checkOut == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);

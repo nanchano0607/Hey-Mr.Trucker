@@ -126,9 +126,11 @@ public class OrderController {
 
     // 주문 상세 조회
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderResponse> getOrderDetail(@PathVariable("orderId") Long orderId) {
+    public ResponseEntity<OrderResponse> getOrderDetail(
+            @PathVariable("orderId") Long orderId,
+            @AuthenticationPrincipal User user) {
         try {
-            Order order = orderService.getOrderDetail(orderId);
+            Order order = orderService.getOwnedOrder(orderId, user);
             return ResponseEntity.ok(new OrderResponse(order));
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
@@ -139,11 +141,12 @@ public class OrderController {
 @PostMapping("/{orderId}/cancel")
 public ResponseEntity<Map<String, String>> cancelOrder(
         @PathVariable("orderId") Long orderId,
+        @AuthenticationPrincipal User user,
         @RequestBody(required = false) RefundAccountRequest refundReq
 ) {
     try {
         log.info("===== [ORDER CANCEL] orderId={}, refundReq={}", orderId, refundReq);
-        orderService.cancelOrder(orderId, refundReq);
+        orderService.cancelOrder(orderId, user, refundReq);
         return ResponseEntity.ok(Map.of("message", "주문이 취소되었습니다."));
     } catch (IllegalStateException e) {
         return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -154,9 +157,11 @@ public ResponseEntity<Map<String, String>> cancelOrder(
 
     // 반품 요청 취소
     @PostMapping("/{orderId}/cancel-return")
-    public ResponseEntity<Map<String, String>> cancelReturn(@PathVariable("orderId") Long orderId) {
+    public ResponseEntity<Map<String, String>> cancelReturn(
+            @PathVariable("orderId") Long orderId,
+            @AuthenticationPrincipal User user) {
         try {
-            orderService.cancelReturn(orderId);
+            orderService.cancelReturn(orderId, user);
             return ResponseEntity.ok(Map.of("message", "반품 요청이 취소되었습니다."));
         } catch (IllegalStateException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

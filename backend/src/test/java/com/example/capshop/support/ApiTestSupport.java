@@ -1,4 +1,4 @@
-package com.example.capshop.admin;
+package com.example.capshop.support;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -13,10 +13,11 @@ import com.example.capshop.config.TokenProvider;
 import com.example.capshop.domain.user.User;
 import com.example.capshop.repository.user.UserRepository;
 
+/** MockMvc 기반 API 통합 테스트 공용 지원: 회원 생성, JWT 발급, 운영과 같은 서블릿 경로 설정. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-abstract class AdminApiTestSupport {
+public abstract class ApiTestSupport {
 
     private static final AtomicInteger SEQUENCE = new AtomicInteger();
 

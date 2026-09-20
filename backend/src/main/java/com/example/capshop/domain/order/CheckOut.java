@@ -45,6 +45,11 @@ public class CheckOut {
 		this.itemsJson = itemsJson;
 	}
 
+	/** 이 체크아웃을 만든 주문자인지 여부. */
+	public boolean isOwnedBy(Long requesterId) {
+		return requesterId != null && requesterId.equals(this.userId);
+	}
+
 	@PrePersist
 	protected void onCreate() {
 		if (this.createdAt == null) {

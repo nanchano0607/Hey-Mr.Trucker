@@ -365,16 +365,30 @@ public class OrderService {
         return orderRepository.findByStatus(status);
     }
 
+    private static final String ORDER_NOT_FOUND_MESSAGE = "주문을 찾을 수 없습니다.";
+
     public Order getOrderDetail(Long orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException(ORDER_NOT_FOUND_MESSAGE));
+    }
+
+    /**
+     * 요청자가 주문한 주문만 돌려준다.
+     * 타인의 주문은 주문번호 추측(열거)이 불가능하도록 없는 주문과 같은 예외를 던진다.
+     */
+    public Order getOwnedOrder(Long orderId, User requester) {
+        Order order = getOrderDetail(orderId);
+        if (requester == null || !order.isOwnedBy(requester.getId())) {
+            throw new RuntimeException(ORDER_NOT_FOUND_MESSAGE);
+        }
+        return order;
     }
 
     @Transactional
-public void cancelOrder(Long orderId, RefundAccountRequest refundReq) {
+public void cancelOrder(Long orderId, User requester, RefundAccountRequest refundReq) {
     logger.info("주문 취소 시작 - orderId: {}", orderId);
 
-    Order order = getOrderDetail(orderId);
+    Order order = getOwnedOrder(orderId, requester);
 
     if (!order.isCancellable()) {
         logger.warn("취소 불가능한 주문 - orderId: {}, status: {}", orderId, order.getStatus());
@@ -570,6 +584,13 @@ public void cancelOrder(Long orderId, RefundAccountRequest refundReq) {
         
         orderRepository.save(order);
         logger.info("===== 반품 완료 처리 완료 - orderId: {} =====", orderId);
+    }
+
+    // 반품 요청 취소 (주문자용): 본인의 주문만 취소할 수 있다.
+    @Transactional
+    public void cancelReturn(Long orderId, User requester) {
+        getOwnedOrder(orderId, requester);
+        cancelReturn(orderId);
     }
 
     // 반품 취소 (관리자용)
@@ -883,6 +904,13 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
         return existingOrder;
     }
 
+    // 결제 승인 전에 체크아웃 소유자를 확인한다. (남의 체크아웃으로 결제가 승인되는 것을 막는다)
+    CheckOut checkOut = checkOutService.findByOrderId(orderId)
+            .orElseThrow(() -> new RuntimeException("체크아웃 정보를 찾을 수 없습니다: " + orderId));
+    if (user == null || !checkOut.isOwnedBy(user.getId())) {
+        throw new IllegalStateException("주문 정보가 일치하지 않습니다.");
+    }
+
     boolean paymentConfirmCallSucceeded = false;
 
     try {
@@ -923,11 +951,7 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
             throw new RuntimeException("토스 결제가 완료되지 않았습니다. 상태: " + tossStatus);
         }
 
-        // 2) CheckOut 조회
-        CheckOut checkOut = checkOutService.findByOrderId(orderId)
-                .orElseThrow(() -> new RuntimeException("체크아웃 정보를 찾을 수 없습니다: " + orderId));
-
-        // 3) items 파싱 -> Order/OrderItem 구성
+        // 2) items 파싱 -> Order/OrderItem 구성 (CheckOut 은 승인 전에 조회·검증했다)
         JsonNode itemsNode = objectMapper.readTree(checkOut.getItemsJson());
 
         Order order = new Order(user);
