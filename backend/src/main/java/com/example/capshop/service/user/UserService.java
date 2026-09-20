@@ -12,6 +12,7 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.example.capshop.domain.user.AuthProvider;
+import com.example.capshop.domain.user.PasswordPolicy;
 import com.example.capshop.domain.user.User;
 import com.example.capshop.domain.user.UserConsent;
 import com.example.capshop.repository.user.UserConsentRepository;
@@ -174,6 +175,8 @@ public class UserService {
 
     // 로컬 회원가입 (전화번호 포함)
     public User createLocalUser(String email, String password, String name, String phone) {
+        PasswordPolicy.requireValid(password);
+
         if (userRepository.findByEmail(email).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
         }
@@ -233,9 +236,7 @@ public class UserService {
 
     @Transactional
     public void resetPassword(String email, String phone, String newPassword) {
-        if (!StringUtils.hasText(newPassword)) {
-            throw new IllegalArgumentException("새 비밀번호를 입력해주세요.");
-        }
+        PasswordPolicy.requireValid(newPassword);
 
         User user = findByEmailAndPhone(email, phone)
                 .orElseThrow(() -> new IllegalArgumentException("일치하는 회원 정보를 찾을 수 없습니다."));
@@ -244,7 +245,7 @@ public class UserService {
             throw new IllegalArgumentException("소셜 로그인 계정은 비밀번호를 재설정할 수 없습니다.");
         }
 
-        user.setPassword(passwordEncoder.encode(newPassword.trim()));
+        user.setPassword(passwordEncoder.encode(newPassword));
         user.setUpdatedAt(java.time.LocalDateTime.now());
         userRepository.save(user);
     }
