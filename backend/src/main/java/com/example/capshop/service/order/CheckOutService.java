@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.capshop.domain.order.CheckOut;
+import com.example.capshop.domain.user.User;
 import com.example.capshop.repository.order.CheckOutRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -46,8 +47,22 @@ public class CheckOutService {
         return checkOutRepository.save(saved);
     }
 
+    /** 클라이언트가 보낸 id/userId/orderId 는 무시하고, 요청자 소유의 새 체크아웃으로 저장한다. */
+    @Transactional
+    public CheckOut create(User owner, CheckOut draft) {
+        CheckOut checkOut = new CheckOut(draft.getName(), draft.getAddress(), draft.getPhone(), draft.getItemsJson());
+        checkOut.setUserId(owner.getId());
+        return save(checkOut);
+    }
+
     public Optional<CheckOut> findById(Long id) {
         return checkOutRepository.findById(id);
+    }
+
+    /** 요청자가 만든 체크아웃만 돌려준다. */
+    public Optional<CheckOut> findOwned(Long id, User requester) {
+        return checkOutRepository.findById(id)
+                .filter(checkOut -> requester != null && checkOut.isOwnedBy(requester.getId()));
     }
     
     public Optional<CheckOut> findByOrderId(String orderId) {

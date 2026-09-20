@@ -22,12 +22,14 @@ import com.example.capshop.domain.order.CheckOut;
 import com.example.capshop.domain.order.Order;
 import com.example.capshop.domain.order.OrderItem;
 import com.example.capshop.domain.order.Payment;
+import com.example.capshop.domain.order.PaymentBreakdown;
 import com.example.capshop.domain.order.PaymentStatus;
 import com.example.capshop.domain.order.Status;
 import com.example.capshop.domain.product.Product;
 import com.example.capshop.domain.product.ProductStock;
 import com.example.capshop.domain.user.User;
 import com.example.capshop.dto.coupon.PointsRequest;
+import com.example.capshop.dto.order.DiscountSelection;
 import com.example.capshop.dto.order.RefundAccountRequest;
 import com.example.capshop.repository.cart.CartItemRepository;
 import com.example.capshop.repository.order.OrderRepository;
@@ -55,6 +57,7 @@ public class OrderService {
     private final com.example.capshop.repository.product.ProductRepository productRepository;
     private final com.example.capshop.repository.product.ProductStockRepository productStockRepository;
     private final PaymentRepository paymentRepository;
+    private final PaymentAmountCalculator paymentAmountCalculator;
     private final PointsService pointsService;
     private final UserCouponService userCouponService;
     private final SolapiSmsService solapiSmsService;
@@ -80,6 +83,7 @@ public class OrderService {
                        com.example.capshop.repository.product.ProductRepository productRepository,
                        com.example.capshop.repository.product.ProductStockRepository productStockRepository,
                        PaymentRepository paymentRepository,
+                       PaymentAmountCalculator paymentAmountCalculator,
                        PointsService pointsService,
                        UserCouponService userCouponService,
                        SolapiSmsService solapiSmsService) {
@@ -89,6 +93,7 @@ public class OrderService {
         this.productRepository = productRepository;
         this.productStockRepository = productStockRepository;
         this.paymentRepository = paymentRepository;
+        this.paymentAmountCalculator = paymentAmountCalculator;
         this.pointsService = pointsService;
         this.userCouponService = userCouponService;
         this.solapiSmsService = solapiSmsService;
@@ -365,16 +370,30 @@ public class OrderService {
         return orderRepository.findByStatus(status);
     }
 
+    private static final String ORDER_NOT_FOUND_MESSAGE = "주문을 찾을 수 없습니다.";
+
     public Order getOrderDetail(Long orderId) {
         return orderRepository.findById(orderId)
-                .orElseThrow(() -> new RuntimeException("주문을 찾을 수 없습니다."));
+                .orElseThrow(() -> new RuntimeException(ORDER_NOT_FOUND_MESSAGE));
+    }
+
+    /**
+     * 요청자가 주문한 주문만 돌려준다.
+     * 타인의 주문은 주문번호 추측(열거)이 불가능하도록 없는 주문과 같은 예외를 던진다.
+     */
+    public Order getOwnedOrder(Long orderId, User requester) {
+        Order order = getOrderDetail(orderId);
+        if (requester == null || !order.isOwnedBy(requester.getId())) {
+            throw new RuntimeException(ORDER_NOT_FOUND_MESSAGE);
+        }
+        return order;
     }
 
     @Transactional
-public void cancelOrder(Long orderId, RefundAccountRequest refundReq) {
+public void cancelOrder(Long orderId, User requester, RefundAccountRequest refundReq) {
     logger.info("주문 취소 시작 - orderId: {}", orderId);
 
-    Order order = getOrderDetail(orderId);
+    Order order = getOwnedOrder(orderId, requester);
 
     if (!order.isCancellable()) {
         logger.warn("취소 불가능한 주문 - orderId: {}, status: {}", orderId, order.getStatus());
@@ -570,6 +589,13 @@ public void cancelOrder(Long orderId, RefundAccountRequest refundReq) {
         
         orderRepository.save(order);
         logger.info("===== 반품 완료 처리 완료 - orderId: {} =====", orderId);
+    }
+
+    // 반품 요청 취소 (주문자용): 본인의 주문만 취소할 수 있다.
+    @Transactional
+    public void cancelReturn(Long orderId, User requester) {
+        getOwnedOrder(orderId, requester);
+        cancelReturn(orderId);
     }
 
     // 반품 취소 (관리자용)
@@ -883,6 +909,20 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
         return existingOrder;
     }
 
+    // 결제 승인 전에 체크아웃 소유자를 확인한다. (남의 체크아웃으로 결제가 승인되는 것을 막는다)
+    CheckOut checkOut = checkOutService.findByOrderId(orderId)
+            .orElseThrow(() -> new RuntimeException("체크아웃 정보를 찾을 수 없습니다: " + orderId));
+    if (user == null || !checkOut.isOwnedBy(user.getId())) {
+        throw new IllegalStateException("주문 정보가 일치하지 않습니다.");
+    }
+
+    // 결제 금액은 서버가 상품 가격·쿠폰·포인트·배송비로 다시 계산해 요청 금액과 비교한다. (토스 승인 전에 검증)
+    DiscountSelection selection = DiscountSelection.from(discountInfo);
+    PaymentBreakdown breakdown = paymentAmountCalculator.calculate(user, checkOut, selection);
+    if (amount == null || breakdown.payableAmount() != amount) {
+        throw new IllegalStateException("결제 금액이 일치하지 않습니다.");
+    }
+
     boolean paymentConfirmCallSucceeded = false;
 
     try {
@@ -923,11 +963,7 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
             throw new RuntimeException("토스 결제가 완료되지 않았습니다. 상태: " + tossStatus);
         }
 
-        // 2) CheckOut 조회
-        CheckOut checkOut = checkOutService.findByOrderId(orderId)
-                .orElseThrow(() -> new RuntimeException("체크아웃 정보를 찾을 수 없습니다: " + orderId));
-
-        // 3) items 파싱 -> Order/OrderItem 구성
+        // 2) items 파싱 -> Order/OrderItem 구성 (CheckOut 은 승인 전에 조회·검증했다)
         JsonNode itemsNode = objectMapper.readTree(checkOut.getItemsJson());
 
         Order order = new Order(user);
@@ -946,8 +982,6 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
             order.setStatus(Status.ORDERED);
         }
 
-        Long calculatedOriginalAmount = 0L;
-
         for (JsonNode item : sortItemsForLocking(itemsNode)) {
             Long productId = item.get("productId").asLong();
             int quantity = item.get("quantity").asInt();
@@ -964,46 +998,20 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
             // OrderItem 생성 (가격 스냅샷 + 사이즈)
             OrderItem orderItem = new OrderItem(product, quantity, product.getPrice(), size);
             order.addOrderItem(orderItem);
-
-            calculatedOriginalAmount += product.getPrice() * quantity;
         }
 
         // total 계산(당신 기존 로직 유지)
         order.calculateTotalPrice();
 
-        // 4) 할인 정보 파싱 (검증 포함)
-        Long originalAmount = 0L;
-        Long finalAmount = amount; // 결제된 최종 금액(배송비 포함일 수 있음)
-        Long couponDiscount = 0L;
-        Long pointsUsed = 0L;
-
-        if (discountInfo != null) {
-            if (discountInfo.get("originalAmount") != null) {
-                originalAmount = ((Number) discountInfo.get("originalAmount")).longValue();
-            }
-            if (discountInfo.get("couponDiscount") != null) {
-                couponDiscount = ((Number) discountInfo.get("couponDiscount")).longValue();
-            }
-            if (discountInfo.get("pointsUsed") != null) {
-                pointsUsed = ((Number) discountInfo.get("pointsUsed")).longValue();
-            }
-            if (discountInfo.get("finalAmount") != null) {
-                Long discountFinalAmount = ((Number) discountInfo.get("finalAmount")).longValue();
-                if (!discountFinalAmount.equals(amount)) {
-                    throw new RuntimeException("할인 정보와 결제 금액 불일치: 할인정보=" + discountFinalAmount + ", 결제금액=" + amount);
-                }
-            }
-        }
-
-        // 5) 원가 검증(선택)
-        if (originalAmount > 0 && !calculatedOriginalAmount.equals(originalAmount)) {
-            throw new RuntimeException("원가 계산 불일치: 계산된금액=" + calculatedOriginalAmount + ", 전달받은금액=" + originalAmount);
-        }
-
-        // 6) Order에 할인 정보 기록(입금대기라도 기록은 가능)
-        Long baseAmount = originalAmount > 0 ? originalAmount : calculatedOriginalAmount;
+        // 4) 할인 내역은 서버가 계산한 결과를 기록한다. (클라이언트가 보낸 금액은 사용하지 않는다)
+        Long originalAmount = breakdown.productAmount();
+        Long finalAmount = breakdown.payableAmount();
+        Long couponDiscount = breakdown.couponDiscount();
+        Long pointsUsed = breakdown.pointsDiscount();
+        Long baseAmount = originalAmount;
         Long totalDiscount = couponDiscount + pointsUsed;
 
+        // 5) Order에 할인 정보 기록(입금대기라도 기록은 가능)
         order.setOriginal_price(baseAmount);
         order.setCoupon_discount(couponDiscount);
         order.setPoints_discount(pointsUsed);
@@ -1029,14 +1037,7 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
         // 9) DONE일 때만 “확정 처리” 수행
         if (isDone) {
             // 쿠폰 사용 처리
-            Long userCouponId = null;
-            if (discountInfo != null) {
-                if (discountInfo.get("userCouponId") != null) {
-                    userCouponId = ((Number) discountInfo.get("userCouponId")).longValue();
-                } else if (discountInfo.get("couponId") != null) {
-                    userCouponId = ((Number) discountInfo.get("couponId")).longValue();
-                }
-            }
+            Long userCouponId = selection.userCouponId();
 
             if (userCouponId != null) {
                 Long usedDiscount = userCouponService.markCouponUsedOnSuccess(user.getId(), userCouponId, savedOrder);

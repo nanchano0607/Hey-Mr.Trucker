@@ -131,7 +131,7 @@ export default function CapDetailPage() {
       }
 
       // 2. 장바구니 현재 수량 조회
-      const findUrl = `${SERVER}/api/cart/find?userId=${user.id}&productId=${cap.id}&size=${size}`;
+      const findUrl = `${SERVER}/api/cart/find?productId=${cap.id}&size=${size}`;
       const findRes = await fetch(findUrl, {
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
       });
@@ -162,7 +162,6 @@ export default function CapDetailPage() {
           ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
         },
         body: JSON.stringify({
-          userId: user.id,
           productId: cap.id,
           quantity,
           size,

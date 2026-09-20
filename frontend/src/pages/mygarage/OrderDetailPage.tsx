@@ -26,6 +26,7 @@ type Order = {
   couponDiscount?: number;
   pointsDiscount?: number;
   totalDiscount?: number;
+  shippingFee?: number; // 저장된 금액으로 역산한 배송비 (무료배송이면 0)
 };
 
 type OrderItem = {
@@ -54,9 +55,6 @@ export default function OrderDetailPage() {
   const [productImages, setProductImages] = useState<{ [key: number]: string }>({});
 
   /** ========== 금액/표시 유틸 ========== */
-  const SHIPPING_FEE = 3500;
-  const FREE_SHIPPING_THRESHOLD = 70000;
-
   const toNum = (v: any): number => {
     if (typeof v === "number" && Number.isFinite(v)) return v;
     const n = Number(v);
@@ -64,14 +62,6 @@ export default function OrderDetailPage() {
   };
 
   const money = (n: any) => `${toNum(n).toLocaleString()}원`;
-
-  // 배송비 계산: 상품금액이 7만원 미만이면 3500원 추가
-  const calculateDisplayPrice = (productAmount: any): number => {
-    const amount = toNum(productAmount);
-    return amount >= FREE_SHIPPING_THRESHOLD 
-      ? amount 
-      : amount + SHIPPING_FEE;
-  };
 
   const calcOriginalPrice = (o: Order): number =>
     (o.orderItems ?? []).reduce((sum, it) => sum + toNum(it.orderPrice) * toNum(it.quantity), 0);
@@ -81,6 +71,9 @@ export default function OrderDetailPage() {
     const coupon = toNum(o.couponDiscount);
     const points = toNum(o.pointsDiscount);
     const totalDiscount = toNum(o.totalDiscount) || (coupon + points);
+    const totalPrice = toNum(o.totalPrice);
+    // 결제 금액 = (상품 금액 - 할인) + 배송비. 주문 당시 저장된 금액으로 역산하므로 정책이 바뀌어도 정확하다.
+    const shippingFee = Math.max(0, totalPrice - Math.max(0, original - totalDiscount));
 
     return {
       ...o,
@@ -88,7 +81,8 @@ export default function OrderDetailPage() {
       couponDiscount: coupon,
       pointsDiscount: points,
       totalDiscount,
-      totalPrice: toNum(o.totalPrice),
+      totalPrice,
+      shippingFee,
     };
   };
 
@@ -590,7 +584,7 @@ export default function OrderDetailPage() {
                       <div className="space-y-2 text-sm text-black">
                         <div className="flex justify-between">
                           <span>상품 금액</span>
-                          <span>{money(calculateDisplayPrice(order.originalPrice))}</span>
+                          <span>{money(order.originalPrice)}</span>
                         </div>
                         {(order.couponDiscount ?? 0) > 0 && (
                           <div className="flex justify-between text-red-600">
@@ -604,6 +598,10 @@ export default function OrderDetailPage() {
                             <span>-{money(order.pointsDiscount)}</span>
                           </div>
                         )}
+                        <div className="flex justify-between">
+                          <span>배송비</span>
+                          <span>{money(order.shippingFee)}</span>
+                        </div>
                         <div className="flex justify-between font-bold text-base pt-2 border-t border-white/20">
                           <span>최종 결제 금액</span>
                           <span className="text-red-600">{money(order.totalPrice)}</span>
@@ -830,7 +828,7 @@ export default function OrderDetailPage() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>상품 금액</span>
-                    <span>{money(calculateDisplayPrice(order.originalPrice))}</span>
+                    <span>{money(order.originalPrice)}</span>
                   </div>
                   {(order.couponDiscount ?? 0) > 0 && (
                     <div className="flex justify-between text-red-400">
@@ -844,6 +842,10 @@ export default function OrderDetailPage() {
                       <span>-{money(order.pointsDiscount)}</span>
                     </div>
                   )}
+                  <div className="flex justify-between">
+                    <span>배송비</span>
+                    <span>{money(order.shippingFee)}</span>
+                  </div>
                   <div className="flex justify-between font-bold text-base pt-2 border-t border-white/20">
                     <span>최종 결제 금액</span>
                     <span className="text-red-400">{money(order.totalPrice)}</span>

@@ -26,11 +26,12 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.util.ServletRequestPathUtils;
 
 import com.example.capshop.domain.user.User;
+import com.example.capshop.support.ApiTestSupport;
 
 import jakarta.servlet.ServletException;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AdminEndpointAuthorizationTest extends AdminApiTestSupport {
+class AdminEndpointAuthorizationTest extends ApiTestSupport {
 
     private static final String ADMIN_CONTROLLER_PACKAGE = "com.example.capshop.admin";
 

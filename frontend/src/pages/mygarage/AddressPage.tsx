@@ -69,7 +69,7 @@ export default function AddressPage() {
     if (!user?.id) return;
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/user/${user.id}/addresses`, {
+      const response = await fetch(`${SERVER}/api/user/me/addresses`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (response.ok) {
@@ -93,7 +93,7 @@ export default function AddressPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/user/${user?.id}/addresses`, {
+      const response = await fetch(`${SERVER}/api/user/me/addresses`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +138,7 @@ export default function AddressPage() {
     setLoading(true);
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/user/${user?.id}/addresses/remove`, {
+      const response = await fetch(`${SERVER}/api/user/me/addresses/remove`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

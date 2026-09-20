@@ -103,6 +103,9 @@ public SecurityFilterChain appChain(HttpSecurity http, HandlerMappingIntrospecto
             .requestMatchers(HttpMethod.DELETE, "/api/stockist/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.POST, "/api/toss/webhook").permitAll()
 
+            // 내 리뷰 목록은 공개 리뷰 조회(/api/reviews/**)보다 먼저 로그인 필요로 지정
+            .requestMatchers(HttpMethod.GET, "/api/reviews/me").authenticated()
+
             // 인증 없이 허용 (공개 API)
             .requestMatchers(HttpMethod.GET,
                 "/api/products/**",

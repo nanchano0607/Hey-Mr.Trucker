@@ -6,7 +6,6 @@ import { API_BASE_URL } from "../config/apiBase";
 const SERVER = API_BASE_URL;
 
 type ReviewCreateRequest = {
-  userId: number;
   productId: number;
   orderId?: number; // 주문 검증용
   rating: number; // 1-5
@@ -126,7 +125,6 @@ export default function ReviewWritePage() {
       
       // 2. 리뷰 생성 요청
       const reviewData: ReviewCreateRequest = {
-        userId: user.id!,
         productId: parseInt(productId),
         orderId: orderId ? parseInt(orderId) : undefined,
         rating,

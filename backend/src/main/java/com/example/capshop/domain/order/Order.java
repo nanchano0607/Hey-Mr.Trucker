@@ -102,6 +102,11 @@ public class Order {
                 .sum();
     }
 
+    /** 이 주문의 주문자인지 여부. */
+    public boolean isOwnedBy(Long userId) {
+        return userId != null && user != null && userId.equals(user.getId());
+    }
+
     public void cancel() {
         this.status = Status.CANCELLED;
     }

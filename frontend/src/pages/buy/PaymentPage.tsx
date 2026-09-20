@@ -106,7 +106,8 @@ export default function PaymentPage() {
     
     // ✅ 백엔드 응답 구조에 맞게 수정
     if (coupon.type === 'PERCENTAGE') {  // discountType → type으로 변경
-      discount = Math.floor(orderAmount * (coupon.discountValue / 100));
+      // 서버(Coupon.calculateDiscount)와 같은 정수 연산. 부동소수점(value / 100)은 1원 오차가 생겨 서버 금액 검증에 걸린다.
+      discount = Math.floor((orderAmount * coupon.discountValue) / 100);
       // 최대 할인 금액 제한
       if (coupon.maxDiscountAmount && discount > coupon.maxDiscountAmount) {
         discount = coupon.maxDiscountAmount;
@@ -193,7 +194,7 @@ export default function PaymentPage() {
       const token = getAccessToken();
       
       // 사용자 정보 조회 (이메일 포함)
-      const userResponse = await fetch(`${SERVER}/api/user/${user.id}`, {
+      const userResponse = await fetch(`${SERVER}/api/user/me`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -206,7 +207,7 @@ export default function PaymentPage() {
       }
       
       // 포인트 조회
-      const pointsResponse = await fetch(`${SERVER}/api/points/user/${user.id}`, {
+      const pointsResponse = await fetch(`${SERVER}/api/points/me`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -221,9 +222,9 @@ export default function PaymentPage() {
       setUserPoints(pointsData.points || 0);
 
       // 쿠폰 조회 (사용 가능한 쿠폰만)
-      console.log('쿠폰 조회 요청:', `${SERVER}/api/user-coupons/user/${user.id}/available`);
+      console.log('쿠폰 조회 요청:', `${SERVER}/api/user-coupons/me/available`);
       try {
-        const couponsResponse = await fetch(`${SERVER}/api/user-coupons/user/${user.id}/available`, {
+        const couponsResponse = await fetch(`${SERVER}/api/user-coupons/me/available`, {
           headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'

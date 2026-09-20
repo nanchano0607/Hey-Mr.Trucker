@@ -94,7 +94,7 @@ export default function License() {
     setLoading(true);
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/user/${user.id}`, {
+      const response = await fetch(`${SERVER}/api/user/me`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       
@@ -138,7 +138,7 @@ export default function License() {
     setLoading(true);
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/user/${user.id}/update`, {
+      const response = await fetch(`${SERVER}/api/user/me/update`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -195,7 +195,7 @@ export default function License() {
     setIsDeleting(true);
     setMessage(null);
     try {
-      const response = await api.post(`/api/user/${user.id}/delete`);
+      const response = await api.post(`/api/user/me/delete`);
       window.alert(response.data?.message || "회원 탈퇴가 완료되었습니다.");
       await logout?.();
       navigate("/login", { replace: true });

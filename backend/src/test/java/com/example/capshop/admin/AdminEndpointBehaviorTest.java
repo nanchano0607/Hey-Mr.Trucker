@@ -28,9 +28,10 @@ import com.example.capshop.domain.user.User;
 import com.example.capshop.repository.content.NoticeRepository;
 import com.example.capshop.repository.product.ProductRepository;
 import com.example.capshop.repository.product.ProductStockRepository;
+import com.example.capshop.support.ApiTestSupport;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AdminEndpointBehaviorTest extends AdminApiTestSupport {
+class AdminEndpointBehaviorTest extends ApiTestSupport {
 
     @Autowired
     private MockMvc mockMvc;
