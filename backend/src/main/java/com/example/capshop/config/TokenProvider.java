@@ -1,8 +1,8 @@
 package com.example.capshop.config;
 
-import com.example.capshop.domain.User;
+import com.example.capshop.domain.user.User;
 
-import com.example.capshop.repository.UserRepository;
+import com.example.capshop.repository.user.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

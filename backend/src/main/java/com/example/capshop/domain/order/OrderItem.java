@@ -1,5 +1,5 @@
 package com.example.capshop.domain.order;
-import com.example.capshop.domain.Product;
+import com.example.capshop.domain.product.Product;
 
 import jakarta.persistence.Entity;
 

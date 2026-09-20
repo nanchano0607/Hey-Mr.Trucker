@@ -4,9 +4,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.example.capshop.domain.Status;
-import com.example.capshop.domain.User;
-import com.example.capshop.domain.UserCoupon;
+import com.example.capshop.domain.coupon.UserCoupon;
+import com.example.capshop.domain.user.User;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

@@ -1,6 +1,5 @@
 package com.example.capshop.domain.order;
 
-import com.example.capshop.domain.PaymentStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
