@@ -106,7 +106,8 @@ export default function PaymentPage() {
     
     // ✅ 백엔드 응답 구조에 맞게 수정
     if (coupon.type === 'PERCENTAGE') {  // discountType → type으로 변경
-      discount = Math.floor(orderAmount * (coupon.discountValue / 100));
+      // 서버(Coupon.calculateDiscount)와 같은 정수 연산. 부동소수점(value / 100)은 1원 오차가 생겨 서버 금액 검증에 걸린다.
+      discount = Math.floor((orderAmount * coupon.discountValue) / 100);
       // 최대 할인 금액 제한
       if (coupon.maxDiscountAmount && discount > coupon.maxDiscountAmount) {
         discount = coupon.maxDiscountAmount;
