@@ -32,25 +32,37 @@ public class PhoneVerification {
 
     private boolean verified = false; // 인증 성공 여부
 
+    private LocalDateTime verifiedAt; // 인증 성공 시각 (유효 시간 판단용)
+
     private int attemptCount = 0; // 인증시도 횟수 제한
 
     private LocalDateTime lastSentAt; // 최근 발송 시간 보호용
 
     @Builder
     public PhoneVerification(String phoneNumber, String code, LocalDateTime createdAt,
-                             LocalDateTime expiresAt, boolean verified, int attemptCount,
+                             LocalDateTime expiresAt, boolean verified, LocalDateTime verifiedAt, int attemptCount,
                              LocalDateTime lastSentAt) {
         this.phoneNumber = phoneNumber;
         this.code = code;
         this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
         this.expiresAt = expiresAt;
         this.verified = verified;
+        this.verifiedAt = verifiedAt;
         this.attemptCount = attemptCount;
         this.lastSentAt = lastSentAt;
     }
 
+    /** 인증 성공 후 이 시간(분) 안에서만 가입·아이디 찾기·비밀번호 재설정에 쓸 수 있다. */
+    public static final int VERIFIED_VALID_MINUTES = 10;
+
     public void markVerified() {
         this.verified = true;
+        this.verifiedAt = LocalDateTime.now();
+    }
+
+    /** 인증이 끝났고 유효 시간 안일 때만 사용할 수 있다. 인증 시각이 없는 과거 데이터는 사용할 수 없다. */
+    public boolean isUsable(LocalDateTime now) {
+        return verified && verifiedAt != null && now.isBefore(verifiedAt.plusMinutes(VERIFIED_VALID_MINUTES));
     }
 
     public void incrementAttempt() {

@@ -219,6 +219,7 @@ export default function SignupPhone() {
         if (!res.ok) {
           const message = parsed?.error || parsed?.message || (typeof parsed === "string" && parsed.trim().length > 0 ? parsed : `HTTP ${res.status}`);
           setError(message);
+          releaseVerificationIfRejected(message);
           console.error("Social signup failed:", message, parsed);
           return;
         }
@@ -259,6 +260,7 @@ export default function SignupPhone() {
         if (!res.ok) {
           const message = typeof parsed === "string" && parsed.trim().length > 0 ? parsed : (parsed?.message || parsed?.error || `HTTP ${res.status}`);
           setError(message);
+          releaseVerificationIfRejected(message);
           return;
         }
         // success
@@ -271,6 +273,15 @@ export default function SignupPhone() {
       setError(e?.message || "처리 중 오류가 발생했습니다.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  // 서버가 인증 만료(10분) 또는 이미 사용된 인증으로 거부하면 화면의 인증 상태도 해제해 다시 인증할 수 있게 한다.
+  const releaseVerificationIfRejected = (message: string) => {
+    if (message.includes("전화번호 인증이 필요")) {
+      setVerified(false);
+      setCodeSent(false);
+      setCode("");
     }
   };
 

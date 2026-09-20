@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.DisplayName;
@@ -149,6 +150,7 @@ class PasswordPolicyApiTest {
                 .phoneNumber(phone)
                 .code("123456")
                 .verified(true)
+                .verifiedAt(LocalDateTime.now())
                 .build());
         return phone;
     }

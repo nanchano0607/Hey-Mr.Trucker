@@ -169,6 +169,7 @@ public class UserController {
 
             // 2. 사용자 생성
             User user = userService.createLocalUser(request.getEmail(), request.getPassword(), request.getName(), phone);
+            phoneVerificationService.consume(phone); // 가입에 쓴 인증은 다시 쓸 수 없다
             
             // 3. 동의 정보 저장 (IP, User-Agent 포함)
             saveConsents(user, request.getAgreements(), clientIp, userAgent);
@@ -246,6 +247,8 @@ public class UserController {
             return ResponseEntity.badRequest().body(Map.of("error", "아이디를 찾을 수 없는 계정입니다."));
         }
 
+        phoneVerificationService.consume(phone.trim()); // 아이디를 알려준 인증은 다시 쓸 수 없다
+
         return ResponseEntity.ok(Map.of(
                 "email", user.getEmail(),
                 "maskedEmail", maskEmail(user.getEmail()),
@@ -269,6 +272,7 @@ public class UserController {
 
         try {
             userService.resetPassword(email, phone, newPassword);
+            phoneVerificationService.consume(phone.trim()); // 재설정에 쓴 인증은 다시 쓸 수 없다
             return ResponseEntity.ok(Map.of("message", "비밀번호가 재설정되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

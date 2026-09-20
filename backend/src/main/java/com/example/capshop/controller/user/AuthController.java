@@ -22,6 +22,7 @@ import com.example.capshop.domain.user.User;
 import com.example.capshop.domain.user.UserConsent;
 import com.example.capshop.repository.user.RefreshTokenRepository;
 import com.example.capshop.repository.user.UserConsentRepository;
+import com.example.capshop.service.user.PhoneVerificationService;
 import com.example.capshop.service.user.SocialSignupTokenService;
 import com.example.capshop.service.user.UserService;
 import com.example.capshop.util.CookieUtil;
@@ -45,6 +46,7 @@ public class AuthController {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserConsentRepository userConsentRepository;
+    private final PhoneVerificationService phoneVerificationService;
 
     @Value("${app.cookie.secure:false}")
     private boolean cookieSecure;
@@ -73,6 +75,9 @@ public class AuthController {
             }
             if (agreements.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "동의 항목이 필요합니다."));
+            }
+            if (!phoneVerificationService.isVerified(phone)) {
+                return ResponseEntity.badRequest().body(Map.of("error", "전화번호 인증이 필요합니다."));
             }
 
             // 2) 소셜 가입용 토큰 파싱
@@ -132,6 +137,8 @@ public class AuthController {
             } else {
                 user = userService.createSocialUser(email, name, provider, providerUserId, phone);
             }
+
+            phoneVerificationService.consume(phone); // 가입에 쓴 인증은 다시 쓸 수 없다
 
             // 4.5) 동의 정보 저장 (IP, User-Agent 포함)
             String clientIp = getClientIp(httpRequest);

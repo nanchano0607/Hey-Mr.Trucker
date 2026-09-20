@@ -156,7 +156,13 @@ export default function LoginPage({ success }: { success?: boolean }) {
       setFoundEmail(response.data.email);
       setFoundAuthProvider(response.data.authProvider || "");
     } catch (err: any) {
-      setFindIdError(err.response?.data?.error || "아이디 찾기에 실패했습니다.");
+      const message = err.response?.data?.error || "아이디 찾기에 실패했습니다.";
+      setFindIdError(message);
+      // 인증 만료(10분) 또는 이미 사용된 인증이면 다시 인증할 수 있게 상태를 해제한다.
+      if (message.includes("전화번호 인증이 필요")) {
+        setFindIdVerified(false);
+        setFindIdCodeSent(false);
+      }
     } finally {
       setFindIdLoading(false);
     }
@@ -202,7 +208,13 @@ export default function LoginPage({ success }: { success?: boolean }) {
       alert("비밀번호가 재설정되었습니다.");
       setShowResetPasswordModal(false);
     } catch (err: any) {
-      setResetError(err.response?.data?.error || "비밀번호 재설정에 실패했습니다.");
+      const message = err.response?.data?.error || "비밀번호 재설정에 실패했습니다.";
+      setResetError(message);
+      // 인증 만료(10분) 또는 이미 사용된 인증이면 다시 인증할 수 있게 상태를 해제한다.
+      if (message.includes("전화번호 인증이 필요")) {
+        setResetVerified(false);
+        setResetCodeSent(false);
+      }
     } finally {
       setResetLoading(false);
     }
