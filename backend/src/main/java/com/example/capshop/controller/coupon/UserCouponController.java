@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,10 +25,10 @@ public class UserCouponController {
     private final UserCouponService userCouponService;
     
     // 사용자의 모든 쿠폰 조회
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getUserCoupons(@PathVariable("userId") Long userId) {
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyCoupons(@AuthenticationPrincipal com.example.capshop.domain.user.User user) {
         try {
-            List<UserCouponResponse> coupons = userCouponService.getUserCoupons(userId);
+            List<UserCouponResponse> coupons = userCouponService.getUserCoupons(user.getId());
             return ResponseEntity.ok(coupons);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -37,10 +36,10 @@ public class UserCouponController {
     }
     
     // 사용자의 사용 가능한 쿠폰들만 조회
-    @GetMapping("/user/{userId}/available")
-    public ResponseEntity<?> getAvailableUserCoupons(@PathVariable("userId") Long userId) {
+    @GetMapping("/me/available")
+    public ResponseEntity<?> getMyAvailableCoupons(@AuthenticationPrincipal com.example.capshop.domain.user.User user) {
         try {
-            List<UserCouponResponse> coupons = userCouponService.getAvailableUserCoupons(userId);
+            List<UserCouponResponse> coupons = userCouponService.getAvailableUserCoupons(user.getId());
             return ResponseEntity.ok(coupons);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -48,12 +47,12 @@ public class UserCouponController {
     }
     
     // 특정 주문 금액에 적용 가능한 쿠폰들 조회
-    @GetMapping("/user/{userId}/applicable")
-    public ResponseEntity<?> getAvailableCouponsForOrder(
-            @PathVariable("userId") Long userId,
+    @GetMapping("/me/applicable")
+    public ResponseEntity<?> getMyApplicableCoupons(
+            @AuthenticationPrincipal com.example.capshop.domain.user.User user,
             @RequestParam("orderAmount") Long orderAmount) {
         try {
-            List<UserCouponResponse> coupons = userCouponService.getAvailableCouponsForOrder(userId, orderAmount);
+            List<UserCouponResponse> coupons = userCouponService.getAvailableCouponsForOrder(user.getId(), orderAmount);
             return ResponseEntity.ok(coupons);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

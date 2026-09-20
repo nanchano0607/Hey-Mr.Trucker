@@ -22,6 +22,8 @@ import com.example.capshop.service.review.ReviewService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import com.example.capshop.domain.user.User;
 
 @RestController
 @RequiredArgsConstructor
@@ -34,24 +36,30 @@ public class ReviewController {
     // 리뷰 작성 가능 여부 확인 - 주문과 상품에 대해 이미 리뷰가 작성되었는지 체크
     @GetMapping("/api/reviews/check")
     public ResponseEntity<?> checkReviewExists(
+            @AuthenticationPrincipal User user,
             @RequestParam(name = "orderId") Long orderId,
             @RequestParam(name = "productId") Long productId) {
         try {
-            boolean exists = reviewService.checkReviewExists(orderId, productId);
+            boolean exists = reviewService.checkReviewExists(orderId, productId, user);
             return ResponseEntity.ok(Map.of(
                 "canWrite", !exists,
                 "alreadyReviewed", exists
             ));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (RuntimeException e) {
+            // 존재하지 않거나 본인의 주문이 아니면 없는 주문처럼 404
+            return ResponseEntity.notFound().build();
         }
     }
     
     // 리뷰 작성
     @PostMapping("/api/reviews")
-    public ResponseEntity<?> createReview(@RequestBody ReviewCreateRequest request) {
+    public ResponseEntity<?> createReview(
+            @AuthenticationPrincipal User user,
+            @RequestBody ReviewCreateRequest request) {
         try {
-            ReviewResponse response = reviewService.createReview(request);
+            ReviewResponse response = reviewService.createReview(user.getId(), request);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -62,10 +70,10 @@ public class ReviewController {
     @PutMapping("/api/reviews/{reviewId}")
     public ResponseEntity<?> updateReview(
             @PathVariable("reviewId") Long reviewId,
-            @RequestParam(name = "userId") Long userId,
+            @AuthenticationPrincipal User user,
             @RequestBody ReviewUpdateRequest request) {
         try {
-            ReviewResponse response = reviewService.updateReview(reviewId, userId, request);
+            ReviewResponse response = reviewService.updateReview(reviewId, user.getId(), request);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -76,9 +84,9 @@ public class ReviewController {
     @DeleteMapping("/api/reviews/{reviewId}")
     public ResponseEntity<?> deleteReview(
             @PathVariable("reviewId") Long reviewId,
-            @RequestParam(name = "userId") Long userId) {
+            @AuthenticationPrincipal User user) {
         try {
-            reviewService.deleteReview(reviewId, userId);
+            reviewService.deleteReview(reviewId, user.getId());
             return ResponseEntity.ok(Map.of("message", "리뷰가 삭제되었습니다."));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -148,10 +156,10 @@ public class ReviewController {
     }
     
     // 특정 사용자의 모든 리뷰 조회
-    @GetMapping("/api/reviews/user/{userId}")
-    public ResponseEntity<?> getReviewsByUser(@PathVariable("userId") Long userId) {
+    @GetMapping("/api/reviews/me")
+    public ResponseEntity<?> getMyReviews(@AuthenticationPrincipal User user) {
         try {
-            List<ReviewResponse> reviews = reviewService.getReviewsByUser(userId);
+            List<ReviewResponse> reviews = reviewService.getReviewsByUser(user.getId());
             return ResponseEntity.ok(reviews);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

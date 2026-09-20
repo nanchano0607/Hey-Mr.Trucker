@@ -12,7 +12,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ReviewCreateRequest {
-    private Long userId;           // 작성자 ID
     private Long productId;        // 상품 ID
     private Long orderId;          // 주문 ID (구매 확인용)
     private int rating;            // 별점 (1~5)

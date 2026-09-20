@@ -15,7 +15,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const refreshCartCount = useCallback(() => {
     if (user && user.id) {
       api
-        .get(`${API_BASE_URL}/api/cart/findAll?userId=${user.id}`)
+        .get(`${API_BASE_URL}/api/cart/findAll`)
         .then((res) => {
           const items = res.data;
           console.log("Cart items:", items);

@@ -194,7 +194,7 @@ export default function PaymentPage() {
       const token = getAccessToken();
       
       // 사용자 정보 조회 (이메일 포함)
-      const userResponse = await fetch(`${SERVER}/api/user/${user.id}`, {
+      const userResponse = await fetch(`${SERVER}/api/user/me`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -207,7 +207,7 @@ export default function PaymentPage() {
       }
       
       // 포인트 조회
-      const pointsResponse = await fetch(`${SERVER}/api/points/user/${user.id}`, {
+      const pointsResponse = await fetch(`${SERVER}/api/points/me`, {
         headers: { 
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -222,9 +222,9 @@ export default function PaymentPage() {
       setUserPoints(pointsData.points || 0);
 
       // 쿠폰 조회 (사용 가능한 쿠폰만)
-      console.log('쿠폰 조회 요청:', `${SERVER}/api/user-coupons/user/${user.id}/available`);
+      console.log('쿠폰 조회 요청:', `${SERVER}/api/user-coupons/me/available`);
       try {
-        const couponsResponse = await fetch(`${SERVER}/api/user-coupons/user/${user.id}/available`, {
+        const couponsResponse = await fetch(`${SERVER}/api/user-coupons/me/available`, {
           headers: { 
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json'

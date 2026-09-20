@@ -62,7 +62,7 @@ export default function BuyPage() {
     if (!user?.id) return;
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/user/${user.id}/addresses`, {
+      const response = await fetch(`${SERVER}/api/user/me/addresses`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (response.ok) {

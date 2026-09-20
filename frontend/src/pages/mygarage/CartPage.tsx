@@ -31,7 +31,7 @@ export default function CartPage() {
     if (!user?.id) return;
     setLoading(true);
     api
-      .get(`${API}/api/cart/findAll?userId=${user.id}`)
+      .get(`${API}/api/cart/findAll`)
       .then((res) => setItems(res.data))
       .catch((err) => {
         console.error("장바구니 조회 실패:", err);
@@ -49,7 +49,6 @@ export default function CartPage() {
   const handleIncrease = (productId: number, size: string) => {
     api
       .post(`${API}/api/cart/increase`, {
-        userId: user?.id,
         productId,
         size,
       })
@@ -64,7 +63,6 @@ export default function CartPage() {
   const handleDecrease = (productId: number, size: string) => {
     api
       .post(`${API}/api/cart/decrease`, {
-        userId: user?.id,
         productId,
         size,
       })
@@ -79,7 +77,6 @@ export default function CartPage() {
   const handleDelete = (productId: number, size: string) => {
     api
       .post(`${API}/api/cart/delete`, {
-        userId: user?.id,
         productId,
         size,
       })

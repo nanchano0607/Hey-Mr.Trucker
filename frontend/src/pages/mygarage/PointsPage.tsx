@@ -62,7 +62,7 @@ export default function PointsPage() {
     
     try {
       const token = localStorage.getItem("access_token");
-      const response = await fetch(`${SERVER}/api/points/user/${user.id}`, {
+      const response = await fetch(`${SERVER}/api/points/me`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       
@@ -87,7 +87,7 @@ export default function PointsPage() {
     setCouponsError(null);
     try {
       const token = localStorage.getItem("access_token");
-      const res = await fetch(`${SERVER}/api/user-coupons/user/${user.id}/available`, {
+      const res = await fetch(`${SERVER}/api/user-coupons/me/available`, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
       if (!res.ok) {

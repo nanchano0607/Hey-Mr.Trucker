@@ -11,7 +11,6 @@ import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -92,9 +91,9 @@ public class UserController {
  
 
     // 개별 사용자 정보 조회 (본인용)
-    @GetMapping("/api/user/{id}")
-    public ResponseEntity<UserAdminResponse> getUserProfile(@PathVariable("id") Long id) {
-        User u = userService.findById(id);
+    @GetMapping("/api/user/me")
+    public ResponseEntity<UserAdminResponse> getMyProfile(@AuthenticationPrincipal User authenticatedUser) {
+        User u = userService.findById(authenticatedUser.getId());
         if (u == null) {
             return ResponseEntity.notFound().build();
         }
@@ -102,9 +101,9 @@ public class UserController {
     }
 
     // 사용자 정보 수정 (본인용)
-    @PostMapping("/api/user/{id}/update")
-    public ResponseEntity<Map<String, Object>> updateUserProfile(
-            @PathVariable("id") Long id,
+    @PostMapping("/api/user/me/update")
+    public ResponseEntity<Map<String, Object>> updateMyProfile(
+            @AuthenticationPrincipal User authenticatedUser,
             @RequestBody Map<String, Object> request,
             HttpServletRequest httpRequest) {
         try {
@@ -118,7 +117,7 @@ public class UserController {
             String ip = getClientIp(httpRequest);
             String userAgent = httpRequest.getHeader("User-Agent");
 
-            userService.updateUserProfile(id, name, phone, emailMarketing, smsMarketing, ip, userAgent);
+            userService.updateUserProfile(authenticatedUser.getId(), name, phone, emailMarketing, smsMarketing, ip, userAgent);
             
             return ResponseEntity.ok(Map.of("message", "정보가 수정되었습니다."));
         } catch (IllegalArgumentException e) {
@@ -127,17 +126,12 @@ public class UserController {
     }
 
     // 계정 탈퇴 (본인용)
-    @PostMapping("/api/user/{id}/delete")
-    public ResponseEntity<Map<String, String>> deleteUserAccount(
-            @PathVariable("id") Long id,
+    @PostMapping("/api/user/me/delete")
+    public ResponseEntity<Map<String, String>> deleteMyAccount(
             @AuthenticationPrincipal User authenticatedUser,
             HttpServletResponse response) {
         try {
-            if (authenticatedUser == null || !authenticatedUser.getId().equals(id)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                        .body(Map.of("error", "본인 계정만 탈퇴할 수 있습니다."));
-            }
-
+            Long id = authenticatedUser.getId();
             userService.deleteUserAccount(id);
             refreshTokenRepository.findByUserId(id).ifPresent(refreshTokenRepository::delete);
             CookieUtil.deleteCookie(response, "refresh_token", false, "Lax");
@@ -316,35 +310,35 @@ public class UserController {
     }
     
     // 주소 목록 조회
-    @GetMapping("/api/user/{userId}/addresses")
-    public ResponseEntity<List<String>> getAddresses(@PathVariable("userId") Long userId) {
-        List<String> addresses = userService.getAddresses(userId);
+    @GetMapping("/api/user/me/addresses")
+    public ResponseEntity<List<String>> getAddresses(@AuthenticationPrincipal User authenticatedUser) {
+        List<String> addresses = userService.getAddresses(authenticatedUser.getId());
         return ResponseEntity.ok(addresses);
     }
     
     // 주소 추가
-    @PostMapping("/api/user/{userId}/addresses")
+    @PostMapping("/api/user/me/addresses")
     public ResponseEntity<Map<String, String>> addAddress(
-            @PathVariable("userId") Long userId,
+            @AuthenticationPrincipal User authenticatedUser,
             @RequestBody Map<String, String> request) {
         String address = request.get("address");
         if (address == null || address.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "주소를 입력해주세요."));
         }
-        userService.addAddress(userId, address);
+        userService.addAddress(authenticatedUser.getId(), address);
         return ResponseEntity.ok(Map.of("message", "주소가 추가되었습니다."));
     }
     
     // 주소 삭제
-    @PostMapping("/api/user/{userId}/addresses/remove")
+    @PostMapping("/api/user/me/addresses/remove")
     public ResponseEntity<Map<String, String>> removeAddress(
-            @PathVariable("userId") Long userId,
+            @AuthenticationPrincipal User authenticatedUser,
             @RequestBody Map<String, String> request) {
         String address = request.get("address");
         if (address == null || address.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "주소를 입력해주세요."));
         }
-        userService.removeAddress(userId, address);
+        userService.removeAddress(authenticatedUser.getId(), address);
         return ResponseEntity.ok(Map.of("message", "주소가 삭제되었습니다."));
     }
 

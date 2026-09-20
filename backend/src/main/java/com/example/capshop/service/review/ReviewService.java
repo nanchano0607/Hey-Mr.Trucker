@@ -37,8 +37,8 @@ public class ReviewService {
     
     // 리뷰 작성 가능 여부 확인 - 특정 주문의 특정 상품에 대해 이미 리뷰가 작성되었는지 체크
     @Transactional(readOnly = true)
-    public boolean checkReviewExists(Long orderId, Long productId) {
-        Order order = orderService.getOrderDetail(orderId);
+    public boolean checkReviewExists(Long orderId, Long productId, User requester) {
+        Order order = orderService.getOwnedOrder(orderId, requester);
         if (order == null) {
             throw new IllegalArgumentException("주문을 찾을 수 없습니다.");
         }
@@ -55,9 +55,9 @@ public class ReviewService {
     
     // 리뷰 작성
     @Transactional
-    public ReviewResponse createReview(ReviewCreateRequest request) {
-        // 사용자, 상품, 주문 조회
-        User user = userService.findById(request.getUserId());
+    public ReviewResponse createReview(Long authorId, ReviewCreateRequest request) {
+        // 사용자(로그인한 작성자), 상품, 주문 조회
+        User user = userService.findById(authorId);
         Product product = productService.findById(request.getProductId());
         Order order = orderService.getOrderDetail(request.getOrderId());
         
