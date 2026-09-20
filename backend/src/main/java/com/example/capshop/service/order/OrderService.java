@@ -31,6 +31,7 @@ import com.example.capshop.domain.user.User;
 import com.example.capshop.dto.coupon.PointsRequest;
 import com.example.capshop.dto.order.DiscountSelection;
 import com.example.capshop.dto.order.RefundAccountRequest;
+import com.example.capshop.dto.order.TossPaymentInfo;
 import com.example.capshop.repository.cart.CartItemRepository;
 import com.example.capshop.repository.order.OrderRepository;
 import com.example.capshop.repository.order.PaymentRepository;
@@ -58,6 +59,7 @@ public class OrderService {
     private final com.example.capshop.repository.product.ProductStockRepository productStockRepository;
     private final PaymentRepository paymentRepository;
     private final PaymentAmountCalculator paymentAmountCalculator;
+    private final TossPaymentClient tossPaymentClient;
     private final PointsService pointsService;
     private final UserCouponService userCouponService;
     private final SolapiSmsService solapiSmsService;
@@ -84,6 +86,7 @@ public class OrderService {
                        com.example.capshop.repository.product.ProductStockRepository productStockRepository,
                        PaymentRepository paymentRepository,
                        PaymentAmountCalculator paymentAmountCalculator,
+                       TossPaymentClient tossPaymentClient,
                        PointsService pointsService,
                        UserCouponService userCouponService,
                        SolapiSmsService solapiSmsService) {
@@ -94,6 +97,7 @@ public class OrderService {
         this.productStockRepository = productStockRepository;
         this.paymentRepository = paymentRepository;
         this.paymentAmountCalculator = paymentAmountCalculator;
+        this.tossPaymentClient = tossPaymentClient;
         this.pointsService = pointsService;
         this.userCouponService = userCouponService;
         this.solapiSmsService = solapiSmsService;
@@ -1093,6 +1097,9 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
         Payment payment = paymentRepository.findTopByOrderOrderByIdDesc(order)
                 .orElseThrow(() -> new IllegalStateException("Payment를 찾을 수 없습니다. orderId=" + orderId));
 
+        // 웹훅은 인증 없는 공개 엔드포인트라 본문을 믿을 수 없다. 토스에 직접 조회해 실제 입금 완료를 확인한다.
+        verifyDepositWithToss(order, payment);
+
         String paymentKey = payment.getPaymentKey();
         long finalAmount = payment.getAmount(); // confirm 시점에 검증된 금액을 저장해두는 전제
 
@@ -1109,6 +1116,27 @@ public Order confirmPaymentAndCreateOrderWithDiscount(
     /**
      * ✅ PAYMENT_PENDING → ORDERED 확정 처리 (멱등 + 검증 + 재고/쿠폰/포인트/정리)
      */
+    /** 토스에서 입금 완료(DONE)이고 주문번호·금액이 저장된 결제와 일치하는지 확인한다. 아니면 확정하지 않는다. */
+    private void verifyDepositWithToss(Order order, Payment payment) {
+        TossPaymentInfo tossPayment = tossPaymentClient.findByPaymentKey(payment.getPaymentKey())
+                .orElseThrow(() -> new DepositNotVerifiedException(
+                        "토스에서 결제를 찾을 수 없습니다. orderId=" + order.getOrderId()));
+
+        if (!"DONE".equals(tossPayment.status())) {
+            throw new DepositNotVerifiedException(
+                    "입금 완료 상태가 아닙니다. orderId=" + order.getOrderId() + ", tossStatus=" + tossPayment.status());
+        }
+        if (!order.getOrderId().equals(tossPayment.orderId())) {
+            throw new DepositNotVerifiedException(
+                    "토스의 주문번호가 다릅니다. orderId=" + order.getOrderId() + ", tossOrderId=" + tossPayment.orderId());
+        }
+        if (payment.getAmount() == null || payment.getAmount() != tossPayment.totalAmount()) {
+            throw new DepositNotVerifiedException(
+                    "토스의 결제 금액이 다릅니다. orderId=" + order.getOrderId()
+                            + ", payment=" + payment.getAmount() + ", toss=" + tossPayment.totalAmount());
+        }
+    }
+
     private void finalizePendingOrder(Order order, long finalAmount, String paymentKey) {
         // 0) 상태 확인
         if (order.getStatus() != Status.PAYMENT_PENDING) {
