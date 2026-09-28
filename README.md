@@ -110,21 +110,23 @@ capshop/
 │   ├── src/components/
 │   ├── src/layouts/
 │   └── src/pages/
-├── docs/                       # ERD 문서
+├── docs/                       # 아키텍처 · ERD 그림
 └── uploads/                    # 런타임 업로드 파일(Git 제외)
 ```
 
 ---
 
-## System Architecture & ERD
+## System Architecture
 
-### System Architecture
+![Hey, Mr. Trucker System Architecture](docs/heymrtrucker-system-architecture.png)
 
-![Hey Mr. Trucker System Architecture](docs/heymrtrucker-system-architecture.png)
+## Layered Architecture
 
-### ERD
+![Hey, Mr. Trucker Layered Architecture](docs/heymrtrucker-layered-architecture.png)
 
-![Capshop ERD](docs/capshop-erd.png)
+## ERD
+
+![Hey, Mr. Trucker ERD](docs/heymrtrucker-erd.png)
 
 ---
 
